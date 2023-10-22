@@ -1,0 +1,8 @@
+.env
+*.avm
+*.prover
+*.verifier
+outputs/
+build/
+src/
+program.json
