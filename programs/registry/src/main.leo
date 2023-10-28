@@ -1,15 +1,7 @@
+import credits.leo;
+
 // The 'program' program.
 program aleo_name_service_registry_v1.aleo {
-    // Structure holding the ASCII bits of a domain name. If the length of the bits is less than 512,
-    // zeros are appended in the end. The bits are then split into four parts, with n1 holding the
-    // first 128 bits and n4 holding the last 128 bits.
-    struct Name {
-        data1: u128, // The first 128 bits of the ASCII domain name
-        data2: u128, // The next 128 bits of the ASCII domain name
-        data3: u128, // The next 128 bits of the ASCII domain name
-        data4: u128 // The last 128 bits of the ASCII domain name
-    }
-
     // base uri ascii bits. Include as many data pieces as necessary to encapsulate the uri. Padded with 0s at the end.
     struct BaseURI {
         data0: u128, // Part 1 of the base uri in bits. Bits should be the representation of the hexadecimal bytes for the ASCII text of the URL
@@ -22,25 +14,26 @@ program aleo_name_service_registry_v1.aleo {
     struct ResolverIndex {
         name: field, // The name_hash
         category: u128, // The type of the resolver, can contain 16 characters in maximum
-        version: u64, // The version of the name
+        version: u64 // The version of the name
     }
 
-    struct TokenId {
-        data1: u128, // data1 to data4 store the Name structure
-        data2: u128,
-        data3: u128,
-        data4: u128,
-        parent: field,
+    // Structure holding the ASCII bits of a domain name. If the length of the bits is less than 512,
+    // zeros are appended in the end. The bits are then split into four parts, with name[0] holding the
+    // first 128 bits and name[3] holding the last 128 bits.
+    struct Name {
+        name: [u128; 4],
+        parent: field // The name_hash of the parent name
     }
 
     struct NameStruct {
-        data: TokenId,
-        resolver: u128, // the resolver progra, 0 means current program
+        name: [u128; 4],
+        parent: field,
+        resolver: u128 // the resolver progra, 0 means current program
     }
 
     record NFT {
         owner: address,
-        data: TokenId,
+        data: field,  // this is the name_hash of the name
         edition: scalar
     }
 
@@ -48,7 +41,7 @@ program aleo_name_service_registry_v1.aleo {
     record NFT_ownership {
         owner: address,
         nft_owner: address,
-        data: TokenId,
+        data: field,  // this is the name_hash of the name
         edition: scalar
     }
 
@@ -60,13 +53,23 @@ program aleo_name_service_registry_v1.aleo {
     mapping names: field => NameStruct;
     // Mapping from an address to a primary name
     mapping primary_names: address => field;
-    // Mapping from a ResolverIndex structure to an Name structure(string)
-    mapping resolvers: ResolverIndex => Name;
+    // Mapping from a ResolverIndex structure to an Name array(string)
+    mapping resolvers: ResolverIndex => [u128; 4];
     // Mapping from a name_hash to a version number
     mapping name_versions: field => u64;
+    // domain name holding amount
+    mapping domain_credits: field => u64;
 
     mapping general_settings: u8 => u128;
     mapping toggle_settings: u8 => u32;
+
+    inline calc_name_hash(name: [u128; 4], parent: field) -> field {
+        let full_name: Name = Name {
+            name: name,
+            parent: parent
+        };
+        return Poseidon2::hash_to_field(full_name);
+    }
 
     // Validate the ASCII bits of a domain name
     inline validate_name_bit(val: u128) -> bool {
@@ -82,15 +85,16 @@ program aleo_name_service_registry_v1.aleo {
         return true;
     }
 
-    function validate_name(name: Name) -> bool {
+    function validate_name(name: [u128; 4]) -> bool {
         // Check if the sum of the ASCII bits is zero
-        let sum: u128 = name.data1 + name.data2 + name.data3 + name.data4;
+        let sum: u128 = name[0u8] + name[1u8] + name[2u8] + name[3u8];
         assert(sum != 0u128);
-        let n1_valid: bool = validate_name_bit(name.data1);
-        let n2_valid: bool = validate_name_bit(name.data2);
-        let n3_valid: bool = validate_name_bit(name.data3);
-        let n4_valid: bool = validate_name_bit(name.data4);
-        return n1_valid && n2_valid && n3_valid && n4_valid;
+        let is_valid: bool = true;
+        for i: u8 in 0u8 .. 4u8 {
+            let new: u128 = name[i];
+            is_valid = is_valid && validate_name_bit(name[i]);
+        }
+        return is_valid;
     }
 
     transition initialize_collection(
@@ -229,29 +233,26 @@ program aleo_name_service_registry_v1.aleo {
     // only admin can call this function
     transition register_tld(
         registrer: address,
-        tld: Name
+        tld: [u128; 4]
     ) {
-        let token_id: TokenId = TokenId {
-            data1: tld.data1,
-            data2: tld.data2,
-            data3: tld.data3,
-            data4: tld.data4,
-            parent: 0field
-        };
-        let name_hash: field = Poseidon2::hash_to_field(token_id);
+        let name_hash: field = calc_name_hash(tld, 0field);
         let hash_caller: u128 = BHP256::hash_to_u128(self.caller);
-        let name_struct: NameStruct = NameStruct {data: token_id, resolver: 0u128};
-        return then finalize(hash_caller, registrer, name_hash, name_struct);
+        return then finalize(hash_caller, registrer, name_hash, tld);
     }
 
     finalize register_tld(
         hash_caller: u128,
         registrer: address,
         name_hash: field,
-        name_struct: NameStruct
+        name: [u128; 4]
     ) {
         // check admin
         assert_eq(hash_caller, general_settings.get(7u8));
+        let name_struct: NameStruct = NameStruct {
+            name: name,
+            parent: 0field,
+            resolver: 0u128
+        };
         names.set(name_hash, name_struct);
         nft_owners.set(name_hash, registrer);
     }
@@ -259,36 +260,34 @@ program aleo_name_service_registry_v1.aleo {
     // register a sub domain
     // the self.caller must be the holder of parent ANS name, it can be a program or an account
     transition register(
-        name: Name,
-        receiver: address,
+        name: [u128; 4],
         parent: field,
+        receiver: address,
         resolver: u128
     ) -> NFT {
         // Validate the name before registration
         assert(validate_name(name));
-        let token_id: TokenId = TokenId {
-            data1: name.data1,
-            data2: name.data2,
-            data3: name.data3,
-            data4: name.data4,
-            parent: parent
+        let name_hash: field = calc_name_hash(name, parent);
+        let nft: NFT = NFT {
+            owner: receiver,
+            data: name_hash,
+            edition: 0scalar
         };
-        let name_hash: field = Poseidon2::hash_to_field(token_id);
-        let nft: NFT = NFT { owner: receiver, data: token_id, edition: 0scalar};
-        let name_struct: NameStruct = NameStruct {data: token_id, resolver: resolver};
-        return nft then finalize(name_hash, name_struct, self.caller);
+        return nft then finalize(name_hash, name, parent, resolver, self.caller);
     }
 
     // Register subdomain of a name
     // The parent domain must public, and the caller must be the owner of the parent domain
     finalize register(
         name_hash: field,
-        name_struct: NameStruct,
+        name: [u128; 4],
+        parent: field,
+        resolver: u128,
         caller: address
     ) {
         // Check if the callar is the owner of the parent name
         // For first level domain, the caller should be the regiestrer program
-        assert_eq(caller, nft_owners.get(name_struct.data.parent));
+        assert_eq(caller, nft_owners.get(parent));
         // Check if the name has already been registered
         assert_eq(names.contains(name_hash), false);
 
@@ -299,41 +298,47 @@ program aleo_name_service_registry_v1.aleo {
 
         // Ensure minting is allowed, and is initialized,
         let toggle_settings_status: u32 = toggle_settings.get(0u8);
-        // frozen & minting & initialized flags = 0b0000...1011 = 11u32
-        // what the settings should be = 0b0000...0011 = 3u32
-        let collection_settings_met: u32 = toggle_settings_status & 11u32;
+        // the settings should be minting & initialized = 0b0000...0011 = 3u32
+        let collection_settings_met: u32 = toggle_settings_status & 3u32;
         assert_eq(collection_settings_met, 3u32);
+
+        let name_struct: NameStruct = NameStruct {
+            name: name,
+            parent: parent,
+            resolver: resolver
+        };
 
         names.set(name_hash, name_struct);
     }
 
     transition register_private(
-        name: Name,
-        receiver: address,
+        name: [u128; 4],
         parent: NFT,
+        receiver: address,
         resolver: u128
     ) -> (NFT, NFT) {
         // Validate the name before registration
         assert(validate_name(name));
-        let parent_hash: field = Poseidon2::hash_to_field(parent.data);
-        let token_id: TokenId = TokenId {
-            data1: name.data1,
-            data2: name.data2,
-            data3: name.data3,
-            data4: name.data4,
-            parent: parent_hash
+        let name_hash: field = calc_name_hash(name, parent.data);
+        let nft: NFT = NFT {
+            owner: receiver,
+            data: name_hash,
+            edition: 0scalar
         };
-        let name_hash: field = Poseidon2::hash_to_field(token_id);
-        let nft: NFT = NFT { owner: receiver, data: token_id, edition: 0scalar};
-        let new_parent: NFT = NFT { owner: parent.owner, data: parent.data, edition: parent.edition };
-        let name_struct: NameStruct = NameStruct {data: token_id, resolver: resolver};
-        return (nft, new_parent) then finalize(name_hash, name_struct);
+        let new_parent: NFT = NFT {
+            owner: parent.owner,
+            data: parent.data,
+            edition: parent.edition
+        };
+        return (nft, new_parent) then finalize(name_hash, name, parent.data, resolver);
     }
 
     // Register subdomain of a name
     finalize register_private(
         name_hash: field,
-        name_struct: NameStruct
+        name: [u128; 4],
+        parent: field,
+        resolver: u128
     ) {
         // Check if the name has already been registered
         assert_eq(names.contains(name_hash), false);
@@ -345,10 +350,15 @@ program aleo_name_service_registry_v1.aleo {
 
         // Ensure minting is allowed, and is initialized,
         let toggle_settings_status: u32 = toggle_settings.get(0u8);
-        // frozen & minting & initialized flags = 0b0000...1011 = 11u32
-        // what the settings should be = 0b0000...0011 = 3u32
-        let collection_settings_met: u32 = toggle_settings_status & 11u32;
+        // the settings should be minting & initialized = 0b0000...0011 = 3u32
+        let collection_settings_met: u32 = toggle_settings_status & 3u32;
         assert_eq(collection_settings_met, 3u32);
+
+        let name_struct: NameStruct = NameStruct {
+            name: name,
+            parent: parent,
+            resolver: resolver
+        };
 
         names.set(name_hash, name_struct);
     }
@@ -358,36 +368,34 @@ program aleo_name_service_registry_v1.aleo {
     // that means, the owner of the parent name must be an account not a program
     // a program can call register_public to register a subname of a domain owned by an account
     transition register_public(
-        name: Name,
-        receiver: address,
+        name: [u128; 4],
         parent: field,
+        receiver: address,
         resolver: u128
     ) -> NFT {
         // Validate the name before registration
         assert(validate_name(name));
-        let token_id: TokenId = TokenId {
-            data1: name.data1,
-            data2: name.data2,
-            data3: name.data3,
-            data4: name.data4,
-            parent: parent
+        let name_hash: field = calc_name_hash(name, parent);
+        let nft: NFT = NFT {
+            owner: receiver,
+            data: name_hash,
+            edition: 0scalar
         };
-        let name_hash: field = Poseidon2::hash_to_field(token_id);
-        let nft: NFT = NFT { owner: receiver, data: token_id, edition: 0scalar};
-        let name_struct: NameStruct = NameStruct {data: token_id, resolver: resolver};
-        return nft then finalize(name_hash, name_struct, self.signer);
+        return nft then finalize(name_hash, name, parent, resolver, self.signer);
     }
 
     // Register subdomain of a name
     // The parent domain must public, and the caller must be the owner of the parent domain
     finalize register_public(
         name_hash: field,
-        name_struct: NameStruct,
+        name: [u128; 4],
+        parent: field,
+        resolver: u128,
         caller: address
     ) {
         // Check if the callar is the owner of the parent name
         // For first level domain, the caller should be the regiestrer program
-        assert_eq(caller, nft_owners.get(name_struct.data.parent));
+        assert_eq(caller, nft_owners.get(parent));
         // Check if the name has already been registered
         assert_eq(names.contains(name_hash), false);
 
@@ -398,10 +406,15 @@ program aleo_name_service_registry_v1.aleo {
 
         // Ensure minting is allowed, and is initialized,
         let toggle_settings_status: u32 = toggle_settings.get(0u8);
-        // frozen & minting & initialized flags = 0b0000...1011 = 11u32
-        // what the settings should be = 0b0000...0011 = 3u32
-        let collection_settings_met: u32 = toggle_settings_status & 11u32;
+        // the settings should be minting & initialized = 0b0000...0011 = 3u32
+        let collection_settings_met: u32 = toggle_settings_status & 3u32;
         assert_eq(collection_settings_met, 3u32);
+
+        let name_struct: NameStruct = NameStruct {
+            name: name,
+            parent: parent,
+            resolver: resolver
+        };
 
         names.set(name_hash, name_struct);
     }
@@ -440,37 +453,35 @@ program aleo_name_service_registry_v1.aleo {
         name_versions.set(name_hash, version + 1u64);
     }
 
-    transition transfer_private_to_public(
+    transition convert_private_to_public(
         nft: NFT,
         private receiver: address
     )
     {
-        let name_hash: field = Poseidon2::hash_to_field(nft.data);
-        return then finalize(receiver, name_hash);
+        return then finalize(receiver, nft.data);
     }
 
-    finalize transfer_private_to_public(
+    finalize convert_private_to_public(
         public owner: address,
-        public name_hash: field,
+        public name_hash: field
     )
     {
         nft_owners.set(name_hash, owner);
     }
 
-    transition transfer_public_to_private(
-        private receiver: address,
-        private token_id: TokenId
+    transition convert_public_to_private(
+        private name_hash: field,
+        private receiver: address
     ) -> NFT
     {
-        let name_hash: field = Poseidon2::hash_to_field(token_id);
         return NFT {
             owner: receiver,
-            data: token_id,
+            data: name_hash,
             edition: 0scalar
         } then finalize(self.caller, name_hash);
     }
 
-    finalize transfer_public_to_private(
+    finalize convert_public_to_private(
         public owner: address,
         public name_hash: field
     )
@@ -522,7 +533,11 @@ program aleo_name_service_registry_v1.aleo {
     ){
         assert_eq(owner, nft_owners.get(name_hash));
         let name_struct: NameStruct = names.get(name_hash);
-        let new_name_struct: NameStruct = NameStruct {data: name_struct.data, resolver: resolver};
+        let new_name_struct: NameStruct = NameStruct {
+            name: name_struct.name,
+            parent: name_struct.parent,
+            resolver: resolver
+        };
         names.set(name_hash, new_name_struct);
     }
 
@@ -532,10 +547,9 @@ program aleo_name_service_registry_v1.aleo {
     transition set_resolver_record(
         name_hash: field,
         category: u128,
-        content: Name
+        content: [u128; 4]
     ) {
-        let name: Name = Name { data1: category, data2: 0u128, data3: 0u128, data4: 0u128 };
-        assert(validate_name(name));
+        assert(validate_name(content));
         return then finalize(name_hash, self.caller, category, content);
     }
 
@@ -543,7 +557,7 @@ program aleo_name_service_registry_v1.aleo {
         name_hash: field,
         owner: address,
         category: u128,
-        content: Name
+        content: [u128; 4]
     ) {
         assert_eq(owner, nft_owners.get(name_hash));
         let version: u64 = name_versions.get_or_use(name_hash, 1u64);
@@ -632,6 +646,68 @@ program aleo_name_service_registry_v1.aleo {
         return (new_nft, nft_ownership);
     }
 
+    // transfer credits to an ans domain
+    transition transfer_credits (
+        receiver: field, // name_hash of the ans domain
+        secret: [u128; 4], // the secret, 0-64 length ascii bits
+        amount: u64,
+        pay_record: credits.leo/credits
+    ) {
+        let program_address: address = aleo1udpz0p5yr9pd8lxa5d94qmmwrqzsupkgp488kcf0hpjagf0jyvfqeft9ja;
+        credits.leo/transfer_private_to_public(pay_record, program_address, amount);
+        let salt: scalar = Poseidon2::hash_to_scalar(secret);
+        let name_secret_hash: field = BHP256::commit_to_field(receiver, salt);
+        return then finalize(name_secret_hash, amount);
+    }
+
+    finalize transfer_credits(name_secret_hash: field, amount: u64) {
+        let current_amount: u64 = domain_credits.get_or_use(name_secret_hash, 0u64);
+        domain_credits.set(name_secret_hash, current_amount + amount);
+    }
+
+    // claim the credits with private ans domain NFT and secret
+    transition claim_credits_private (
+        nft: NFT,
+        secret: [u128; 4], // the secret, 0-64 length ascii bits
+        amount: u64
+    ) -> NFT {
+        credits.leo/transfer_public_to_private(self.caller, amount);
+        let salt: scalar = Poseidon2::hash_to_scalar(secret);
+        let name_hash: field = Poseidon2::hash_to_field(nft.data);
+        let name_secret_hash: field = BHP256::commit_to_field(name_hash, salt);
+        let new_nft: NFT = NFT {
+            owner: nft.owner,
+            data: nft.data,
+            edition: nft.edition
+        };
+        return new_nft then finalize(name_secret_hash, amount);
+    }
+
+    finalize claim_credits_private(name_secret_hash: field, amount: u64) {
+        let current_amount: u64 = domain_credits.get(name_secret_hash);
+        assert_eq(current_amount >= amount, true);
+        domain_credits.set(name_secret_hash, current_amount - amount);
+    }
+
+    // claim the credits with public ans domain and secret
+    transition claim_credits_public (
+        name_hash: field,
+        secret: [u128; 4], // the secret, 0-64 length ascii bits
+        amount: u64
+    ) {
+        credits.leo/transfer_public_to_private(self.caller, amount);
+        let salt: scalar = Poseidon2::hash_to_scalar(secret);
+        let name_secret_hash: field = BHP256::commit_to_field(name_hash, salt);
+        return then finalize(name_hash, self.caller, name_secret_hash, amount);
+    }
+
+    finalize claim_credits_public(name_hash: field, owner: address, name_secret_hash: field, amount: u64) {
+        assert_eq(owner, nft_owners.get(name_hash));
+        let current_amount: u64 = domain_credits.get(name_secret_hash);
+        assert(current_amount >= amount);
+        domain_credits.set(name_secret_hash, current_amount - amount);
+    }
+
     // Proof that you own an nft without revealing the nft.
     // this never actually destroys the nft as the finalize
     // block is guaranteed to fail.
@@ -654,8 +730,7 @@ program aleo_name_service_registry_v1.aleo {
         nft: NFT
     )
     {
-        let name_hash: field = Poseidon2::hash_to_field(nft.data);
-        return then finalize(name_hash);
+        return then finalize(nft.data);
     }
 
     finalize burn(name_hash: field)
