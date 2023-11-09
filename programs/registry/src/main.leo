@@ -57,8 +57,6 @@ program aleo_name_service_registry_v1.aleo {
     mapping resolvers: ResolverIndex => [u128; 4];
     // Mapping from a name_hash to a version number
     mapping name_versions: field => u64;
-    // domain name holding amount
-    mapping domain_credits: field => u64;
 
     mapping general_settings: u8 => u128;
     mapping toggle_settings: u8 => u32;
@@ -646,81 +644,16 @@ program aleo_name_service_registry_v1.aleo {
         return (new_nft, nft_ownership);
     }
 
-    // transfer credits to an ans domain
-    transition transfer_credits (
-        receiver: field, // name_hash of the ans domain
-        secret: [u128; 4], // the secret, 0-64 length ascii bits
-        amount: u64,
-        pay_record: credits.leo/credits
-    ) {
-        let program_address: address = aleo1udpz0p5yr9pd8lxa5d94qmmwrqzsupkgp488kcf0hpjagf0jyvfqeft9ja;
-        credits.leo/transfer_private_to_public(pay_record, program_address, amount);
-        let salt: scalar = Poseidon2::hash_to_scalar(secret);
-        let name_secret_hash: field = BHP256::commit_to_field(receiver, salt);
-        return then finalize(name_secret_hash, amount);
-    }
-
-    finalize transfer_credits(name_secret_hash: field, amount: u64) {
-        let current_amount: u64 = domain_credits.get_or_use(name_secret_hash, 0u64);
-        domain_credits.set(name_secret_hash, current_amount + amount);
-    }
-
-    // claim the credits with private ans domain NFT and secret
-    transition claim_credits_private (
-        nft: NFT,
-        secret: [u128; 4], // the secret, 0-64 length ascii bits
-        amount: u64
-    ) -> NFT {
-        credits.leo/transfer_public_to_private(self.caller, amount);
-        let salt: scalar = Poseidon2::hash_to_scalar(secret);
-        let name_hash: field = Poseidon2::hash_to_field(nft.data);
-        let name_secret_hash: field = BHP256::commit_to_field(name_hash, salt);
-        let new_nft: NFT = NFT {
-            owner: nft.owner,
-            data: nft.data,
-            edition: nft.edition
-        };
-        return new_nft then finalize(name_secret_hash, amount);
-    }
-
-    finalize claim_credits_private(name_secret_hash: field, amount: u64) {
-        let current_amount: u64 = domain_credits.get(name_secret_hash);
-        assert_eq(current_amount >= amount, true);
-        domain_credits.set(name_secret_hash, current_amount - amount);
-    }
-
-    // claim the credits with public ans domain and secret
-    transition claim_credits_public (
-        name_hash: field,
-        secret: [u128; 4], // the secret, 0-64 length ascii bits
-        amount: u64
-    ) {
-        credits.leo/transfer_public_to_private(self.caller, amount);
-        let salt: scalar = Poseidon2::hash_to_scalar(secret);
-        let name_secret_hash: field = BHP256::commit_to_field(name_hash, salt);
-        return then finalize(name_hash, self.caller, name_secret_hash, amount);
-    }
-
-    finalize claim_credits_public(name_hash: field, owner: address, name_secret_hash: field, amount: u64) {
-        assert_eq(owner, nft_owners.get(name_hash));
-        let current_amount: u64 = domain_credits.get(name_secret_hash);
-        assert(current_amount >= amount);
-        domain_credits.set(name_secret_hash, current_amount - amount);
-    }
-
     // Proof that you own an nft without revealing the nft.
     // this never actually destroys the nft as the finalize
     // block is guaranteed to fail.
     transition authorize(
         nft: NFT
-    )
-    {
+    ) {
         return then finalize();
     }
 
-    finalize authorize(
-    )
-    {
+    finalize authorize() {
         // fails on purpose, so that the nft is not burned.
         assert_eq(0u8, 1u8);
     }
@@ -728,13 +661,11 @@ program aleo_name_service_registry_v1.aleo {
     // this will actually destroys the nft
     transition burn(
         nft: NFT
-    )
-    {
+    ) {
         return then finalize(nft.data);
     }
 
-    finalize burn(name_hash: field)
-    {
+    finalize burn(name_hash: field) {
         names.remove(name_hash);
     }
 

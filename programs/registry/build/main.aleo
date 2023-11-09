@@ -59,11 +59,6 @@ mapping name_versions:
 	value as u64.public;
 
 
-mapping domain_credits:
-	key as field.public;
-	value as u64.public;
-
-
 mapping general_settings:
 	key as u8.public;
 	value as u128.public;
@@ -1633,78 +1628,6 @@ function proof_ownership:
     cast r0.owner r0.data r0.edition into r3 as NFT.record;
     output r3 as NFT.record;
     output r2 as NFT_ownership.record;
-
-
-function transfer_credits:
-    input r0 as field.private;
-    input r1 as [u128; 4u32].private;
-    input r2 as u64.private;
-    input r3 as credits.aleo/credits.record;
-    call credits.aleo/transfer_private_to_public r3 aleo1udpz0p5yr9pd8lxa5d94qmmwrqzsupkgp488kcf0hpjagf0jyvfqeft9ja r2 into r4 r5;
-    hash.psd2 r1 into r6 as scalar;
-    commit.bhp256 r0 r6 into r7 as field;
-    async transfer_credits r5 r7 r2 into r8;
-    output r8 as aleo_name_service_registry_v1.aleo/transfer_credits.future;
-
-finalize transfer_credits:
-    input r0 as credits.aleo/transfer_private_to_public.future;
-    input r1 as field.public;
-    input r2 as u64.public;
-    await r0;
-    get.or_use domain_credits[r1] 0u64 into r3;
-    add r3 r2 into r4;
-    set r4 into domain_credits[r1];
-
-
-function claim_credits_private:
-    input r0 as NFT.record;
-    input r1 as [u128; 4u32].private;
-    input r2 as u64.private;
-    call credits.aleo/transfer_public_to_private self.caller r2 into r3 r4;
-    hash.psd2 r1 into r5 as scalar;
-    hash.psd2 r0.data into r6 as field;
-    commit.bhp256 r6 r5 into r7 as field;
-    cast r0.owner r0.data r0.edition into r8 as NFT.record;
-    async claim_credits_private r4 r7 r2 into r9;
-    output r8 as NFT.record;
-    output r9 as aleo_name_service_registry_v1.aleo/claim_credits_private.future;
-
-finalize claim_credits_private:
-    input r0 as credits.aleo/transfer_public_to_private.future;
-    input r1 as field.public;
-    input r2 as u64.public;
-    await r0;
-    get domain_credits[r1] into r3;
-    gte r3 r2 into r4;
-    assert.eq r4 true;
-    sub r3 r2 into r5;
-    set r5 into domain_credits[r1];
-
-
-function claim_credits_public:
-    input r0 as field.private;
-    input r1 as [u128; 4u32].private;
-    input r2 as u64.private;
-    call credits.aleo/transfer_public_to_private self.caller r2 into r3 r4;
-    hash.psd2 r1 into r5 as scalar;
-    commit.bhp256 r0 r5 into r6 as field;
-    async claim_credits_public r4 r0 self.caller r6 r2 into r7;
-    output r7 as aleo_name_service_registry_v1.aleo/claim_credits_public.future;
-
-finalize claim_credits_public:
-    input r0 as credits.aleo/transfer_public_to_private.future;
-    input r1 as field.public;
-    input r2 as address.public;
-    input r3 as field.public;
-    input r4 as u64.public;
-    await r0;
-    get nft_owners[r1] into r5;
-    assert.eq r2 r5;
-    get domain_credits[r3] into r6;
-    gte r6 r4 into r7;
-    assert.eq r7 true;
-    sub r6 r4 into r8;
-    set r8 into domain_credits[r3];
 
 
 function authorize:

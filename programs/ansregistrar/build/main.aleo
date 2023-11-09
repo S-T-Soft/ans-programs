@@ -98,36 +98,6 @@ finalize register_fld:
     assert.eq r2 1u128;
 
 
-function register_sub_private:
-    input r0 as [u128; 4u32].private;
-    input r1 as address.private;
-    input r2 as aleo_name_service_registry_v1.aleo/NFT.record;
-    call aleo_name_service_registry_v1.aleo/register_private r0 r2 r1 0u128 into r3 r4 r5;
-    async register_sub_private r5 into r6;
-    output r6 as ans_registrar_v1.aleo/register_sub_private.future;
-
-finalize register_sub_private:
-    input r0 as aleo_name_service_registry_v1.aleo/register_private.future;
-    await r0;
-    get general_settings[1u8] into r1;
-    assert.eq r1 1u128;
-
-
-function register_sub_public:
-    input r0 as [u128; 4u32].private;
-    input r1 as address.private;
-    input r2 as field.private;
-    call aleo_name_service_registry_v1.aleo/register_public r0 r2 r1 0u128 into r3 r4;
-    async register_sub_public r4 into r5;
-    output r5 as ans_registrar_v1.aleo/register_sub_public.future;
-
-finalize register_sub_public:
-    input r0 as aleo_name_service_registry_v1.aleo/register_public.future;
-    await r0;
-    get general_settings[1u8] into r1;
-    assert.eq r1 1u128;
-
-
 function claim:
     input r0 as u64.private;
     input r1 as address.private;

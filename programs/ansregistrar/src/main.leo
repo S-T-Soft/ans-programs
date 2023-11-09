@@ -88,34 +88,6 @@ program ans_registrar_v1.aleo {
         assert_eq(general_settings.get(1u8), 1u128);
     }
 
-    transition register_sub_private(
-        name: [u128; 4],
-        receiver: address,
-        parent: aleo_name_service_registry_v1.leo/NFT
-    ) {
-        aleo_name_service_registry_v1.leo/register_private(name, parent, receiver, 0u128);
-        return then finalize();
-    }
-
-    finalize register_sub_private() {
-        // check minting flag
-        assert_eq(general_settings.get(1u8), 1u128);
-    }
-
-    transition register_sub_public(
-        name: [u128; 4],
-        receiver: address,
-        parent: field
-    ) {
-        aleo_name_service_registry_v1.leo/register_public(name, parent, receiver, 0u128);
-        return then finalize();
-    }
-
-    finalize register_sub_public() {
-        // check minting flag
-        assert_eq(general_settings.get(1u8), 1u128);
-    }
-
     transition claim(amount: u64, receiver: address) {
         let hash_caller: u128 = BHP256::hash_to_u128(self.caller);
         credits.leo/transfer_public_to_private(receiver, amount);
