@@ -1505,6 +1505,9 @@ finalize transfer_public:
     get.or_use name_versions[r1] 0u64 into r12;
     add r12 1u64 into r13;
     set r13 into name_versions[r1];
+    get.or_use primary_names[r3] r1 into r14;
+    is.eq r14 r1 into r15;
+    remove primary_names[r3];
 
 
 function convert_private_to_public:
@@ -1544,6 +1547,9 @@ finalize convert_public_to_private:
     get.or_use name_versions[r1] 0u64 into r11;
     add r11 1u64 into r12;
     set r12 into name_versions[r1];
+    get.or_use primary_names[r2] r1 into r13;
+    is.eq r13 r1 into r14;
+    remove primary_names[r2];
 
 
 function set_primary_name:
@@ -1591,8 +1597,10 @@ function set_resolver_record:
     input r2 as [u128; 8u32].private;
     gt r1 0u128 into r3;
     assert.eq r3 true;
-    async set_resolver_record r0 self.caller r1 r2 into r4;
-    output r4 as aleo_name_service_registry_v2.aleo/set_resolver_record.future;
+    gt r2[0u32] 0u128 into r4;
+    assert.eq r4 true;
+    async set_resolver_record r0 self.caller r1 r2 into r5;
+    output r5 as aleo_name_service_registry_v2.aleo/set_resolver_record.future;
 
 finalize set_resolver_record:
     input r0 as field.public;

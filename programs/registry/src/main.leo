@@ -478,6 +478,11 @@ program aleo_name_service_registry_v2.aleo {
         // increase the version of the name, so all resolvers will be expired
         let version: u64 = name_versions.get_or_use(name_hash, 0u64);
         name_versions.set(name_hash, version + 1u64);
+        // remove the primary name if the name is the primary name of the owner
+        let primary_name: field = primary_names.get_or_use(owner, name_hash);
+        if (primary_name == name_hash) {
+            primary_names.remove(owner);
+        }
     }
 
     transition convert_private_to_public(
@@ -532,6 +537,11 @@ program aleo_name_service_registry_v2.aleo {
         // increase the version of the name, so all resolvers will be expired
         let version: u64 = name_versions.get_or_use(name_hash, 0u64);
         name_versions.set(name_hash, version + 1u64);
+        // remove the primary name if the name is the primary name of the owner
+        let primary_name: field = primary_names.get_or_use(owner, name_hash);
+        if (primary_name == name_hash) {
+            primary_names.remove(owner);
+        }
     }
 
     transition set_primary_name(
@@ -591,6 +601,8 @@ program aleo_name_service_registry_v2.aleo {
         content: [u128; 8]
     ) {
         assert(category > 0u128);
+        // ensure the content is not empty
+        assert(content[0u8] > 0u128);
         return then finalize(name_hash, self.caller, category, content);
     }
 
