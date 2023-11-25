@@ -1,15 +1,7 @@
 // The 'program' program.
-program aleo_name_service_registry_v1.aleo {
+program aleo_name_service_registry_v2.aleo {
     record NFT {
         owner: address,
-        data: field,  // this is the name_hash of the name
-        edition: scalar
-    }
-
-    // a way to prove ownership of an nft privately
-    record NFT_ownership {
-        owner: address,
-        nft_owner: address,
         data: field,  // this is the name_hash of the name
         edition: scalar
     }

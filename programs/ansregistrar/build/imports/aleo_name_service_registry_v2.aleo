@@ -1,13 +1,7 @@
-program aleo_name_service_registry_v1.aleo;
+program aleo_name_service_registry_v2.aleo;
 
 record NFT:
     owner as address.private;
-    data as field.private;
-    edition as scalar.private;
-
-record NFT_ownership:
-    owner as address.private;
-    nft_owner as address.private;
     data as field.private;
     edition as scalar.private;
 
@@ -20,7 +14,7 @@ function register:
     cast r2 0field 0scalar into r4 as NFT.record;
     async register 0field r0 r1 r3 self.caller into r5;
     output r4 as NFT.record;
-    output r5 as aleo_name_service_registry_v1.aleo/register.future;
+    output r5 as aleo_name_service_registry_v2.aleo/register.future;
 
 finalize register:
     input r0 as field.public;
@@ -41,7 +35,7 @@ function register_private:
     async register_private 0field r0 r1.data r3 into r6;
     output r4 as NFT.record;
     output r5 as NFT.record;
-    output r6 as aleo_name_service_registry_v1.aleo/register_private.future;
+    output r6 as aleo_name_service_registry_v2.aleo/register_private.future;
 
 finalize register_private:
     input r0 as field.public;
@@ -59,7 +53,7 @@ function register_public:
     cast r2 0field 0scalar into r4 as NFT.record;
     async register_public 0field r0 r1 r3 self.signer into r5;
     output r4 as NFT.record;
-    output r5 as aleo_name_service_registry_v1.aleo/register_public.future;
+    output r5 as aleo_name_service_registry_v2.aleo/register_public.future;
 
 finalize register_public:
     input r0 as field.public;

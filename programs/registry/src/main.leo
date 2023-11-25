@@ -1,7 +1,7 @@
 import credits.leo;
 
 // The 'program' program.
-program aleo_name_service_registry_v1.aleo {
+program aleo_name_service_registry_v2.aleo {
     // base uri ascii bits. Include as many data pieces as necessary to encapsulate the uri. Padded with 0s at the end.
     struct BaseURI {
         data0: u128, // Part 1 of the base uri in bits. Bits should be the representation of the hexadecimal bytes for the ASCII text of the URL
@@ -28,7 +28,17 @@ program aleo_name_service_registry_v1.aleo {
     struct NameStruct {
         name: [u128; 4],
         parent: field,
-        resolver: u128 // the resolver progra, 0 means current program
+        resolver: u128 // the resolver program, 0 means current program
+    }
+
+    struct AddressPair {
+        nft_owner: address,  // the owner of the nft
+        nft_operator: address  // the operator of the nft
+    }
+
+    struct NameAddressPair {
+        name_hash: field,  // the name_hash of the name
+        nft_owner: address  // the owner of the nft
     }
 
     record NFT {
@@ -47,16 +57,22 @@ program aleo_name_service_registry_v1.aleo {
 
     // Mappings for different data structures
     // Store public domain to address
-    // For top level domains, the address is the registrer
+    // For top level domains, the address is the registrar
     mapping nft_owners: field => address;
     // Mapping from a field(hash name) to an NameStruct structure
     mapping names: field => NameStruct;
     // Mapping from an address to a primary name
     mapping primary_names: address => field;
-    // Mapping from a ResolverIndex structure to an Name array(string)
-    mapping resolvers: ResolverIndex => [u128; 4];
+    // Mapping from a ResolverIndex structure to an Name array(string), max 128 ASCII characters
+    mapping resolvers: ResolverIndex => [u128; 8];
     // Mapping from a name_hash to a version number
     mapping name_versions: field => u64;
+
+    // nft_owner approved operators to transfer nft
+    // we make the address public is because we want others can check which address is approved
+    mapping approved_for_all: AddressPair => bool;
+    // nft_owner approved address to transfer nft. and make the address public for the same reason
+    mapping approved_for_nft: NameAddressPair => address;
 
     mapping general_settings: u8 => u128;
     mapping toggle_settings: u8 => u32;
@@ -84,12 +100,10 @@ program aleo_name_service_registry_v1.aleo {
     }
 
     function validate_name(name: [u128; 4]) -> bool {
-        // Check if the sum of the ASCII bits is zero
-        let sum: u128 = name[0u8] + name[1u8] + name[2u8] + name[3u8];
-        assert(sum != 0u128);
+        // Check if the name is empty
+        assert_neq(name[0u8], 0u128);
         let is_valid: bool = true;
         for i: u8 in 0u8 .. 4u8 {
-            let new: u128 = name[i];
             is_valid = is_valid && validate_name_bit(name[i]);
         }
         return is_valid;
@@ -230,17 +244,17 @@ program aleo_name_service_registry_v1.aleo {
     // register a top level domain
     // only admin can call this function
     transition register_tld(
-        registrer: address,
+        registrar: address,
         tld: [u128; 4]
     ) {
         let name_hash: field = calc_name_hash(tld, 0field);
         let hash_caller: u128 = BHP256::hash_to_u128(self.caller);
-        return then finalize(hash_caller, registrer, name_hash, tld);
+        return then finalize(hash_caller, registrar, name_hash, tld);
     }
 
     finalize register_tld(
         hash_caller: u128,
-        registrer: address,
+        registrar: address,
         name_hash: field,
         name: [u128; 4]
     ) {
@@ -252,7 +266,7 @@ program aleo_name_service_registry_v1.aleo {
             resolver: 0u128
         };
         names.set(name_hash, name_struct);
-        nft_owners.set(name_hash, registrer);
+        nft_owners.set(name_hash, registrar);
     }
 
     // register a sub domain
@@ -283,8 +297,8 @@ program aleo_name_service_registry_v1.aleo {
         resolver: u128,
         caller: address
     ) {
-        // Check if the callar is the owner of the parent name
-        // For first level domain, the caller should be the regiestrer program
+        // Check if the caller is the owner of the parent name
+        // For first level domain, the caller should be the registrar program
         assert_eq(caller, nft_owners.get(parent));
         // Check if the name has already been registered
         assert_eq(names.contains(name_hash), false);
@@ -391,8 +405,8 @@ program aleo_name_service_registry_v1.aleo {
         resolver: u128,
         caller: address
     ) {
-        // Check if the callar is the owner of the parent name
-        // For first level domain, the caller should be the regiestrer program
+        // Check if the caller is the owner of the parent name
+        // For first level domain, the caller should be the registrar program
         assert_eq(caller, nft_owners.get(parent));
         // Check if the name has already been registered
         assert_eq(names.contains(name_hash), false);
@@ -443,8 +457,23 @@ program aleo_name_service_registry_v1.aleo {
         caller: address
     )
     {
-        assert_eq(caller, nft_owners.get(name_hash));
         assert_neq(caller, receiver);
+        // check if the caller is the owner of the name or approved by the owner
+        let owner: address = nft_owners.get(name_hash);
+        let name_address_pair: NameAddressPair = NameAddressPair {
+            name_hash: name_hash,
+            nft_owner: owner
+        };
+        let address_pair: AddressPair = AddressPair {
+            nft_owner: owner,
+            nft_operator: caller
+        };
+
+        // Since this is a public name, this operation will not disclose any additional information.
+        assert(caller == owner ||
+           approved_for_nft.get_or_use(name_address_pair, owner) == caller ||
+           approved_for_all.get_or_use(address_pair, false));
+
         nft_owners.set(name_hash, receiver);
         // increase the version of the name, so all resolvers will be expired
         let version: u64 = name_versions.get_or_use(name_hash, 0u64);
@@ -480,11 +509,25 @@ program aleo_name_service_registry_v1.aleo {
     }
 
     finalize convert_public_to_private(
-        public owner: address,
+        public caller: address,
         public name_hash: field
     )
     {
-        assert_eq(owner, nft_owners.get(name_hash));
+        // check if the caller is the owner of the name or approved by the owner
+        let owner: address = nft_owners.get(name_hash);
+        let name_address_pair: NameAddressPair = NameAddressPair {
+            name_hash: name_hash,
+            nft_owner: owner
+        };
+        let address_pair: AddressPair = AddressPair {
+            nft_owner: owner,
+            nft_operator: caller
+        };
+        // Since this is a public name, this operation will not disclose any additional information.
+        assert(caller == owner ||
+           approved_for_nft.get_or_use(name_address_pair, owner) == caller ||
+           approved_for_all.get_or_use(address_pair, false));
+
         nft_owners.remove(name_hash);
         // increase the version of the name, so all resolvers will be expired
         let version: u64 = name_versions.get_or_use(name_hash, 0u64);
@@ -540,14 +583,14 @@ program aleo_name_service_registry_v1.aleo {
     }
 
     // set resolver record
-    // category is the bits of the category string, u128 can store max of 16 caracters
+    // category is the bits of the category string, u128 can store max of 16 characters
     // for example, "btc" is 6517858u128, "eth" is 6845541u128, "twitter" is 32199698188695412u128
     transition set_resolver_record(
         name_hash: field,
         category: u128,
-        content: [u128; 4]
+        content: [u128; 8]
     ) {
-        assert(validate_name(content));
+        assert(category > 0u128);
         return then finalize(name_hash, self.caller, category, content);
     }
 
@@ -555,7 +598,7 @@ program aleo_name_service_registry_v1.aleo {
         name_hash: field,
         owner: address,
         category: u128,
-        content: [u128; 4]
+        content: [u128; 8]
     ) {
         assert_eq(owner, nft_owners.get(name_hash));
         let version: u64 = name_versions.get_or_use(name_hash, 1u64);
@@ -608,14 +651,14 @@ program aleo_name_service_registry_v1.aleo {
 
     // check if the name is owned by the address
     // this transition is use by other programs to check if the name is owned by the owner address
-    transition check_ownship(
+    transition is_owner(
         name_hash: field,
         owner: address
     ) {
         return then finalize(name_hash, owner);
     }
 
-    finalize check_ownship(
+    finalize is_owner(
         name_hash: field,
         owner: address
     ) {
@@ -669,14 +712,55 @@ program aleo_name_service_registry_v1.aleo {
         names.remove(name_hash);
     }
 
-    transition is_avaiable(
+    transition is_available(
         name_hash: field
     ) -> bool {
         return then finalize(name_hash);
     }
 
-    finalize is_avaiable(name_hash: field) {
+    finalize is_available(name_hash: field) {
         assert_eq(names.contains(name_hash), false);
+    }
+
+    // Approves another address to transfer the given public name_hash The zero address indicates there is no approved address.
+    // There can only be one approved address per name at a given time.
+    // Can only be called by the name owner
+    transition approve(
+        to: address,
+        name_hash: field
+    ) {
+        return then finalize(self.caller, to, name_hash);
+    }
+
+    finalize approve(
+        owner: address,
+        to: address,
+        name_hash: field
+    ) {
+        assert_eq(owner, nft_owners.get(name_hash));
+        approved_for_nft.set(NameAddressPair {
+            name_hash: name_hash,
+            nft_owner: owner
+        }, to);
+    }
+
+    // Sets or unsets the approval of a given operator An operator is allowed to transfer all public names of the sender on their behalf.
+    transition set_approval_for_all(
+        operator: address,
+        approved: bool
+    ) {
+        return then finalize(self.caller, operator, approved);
+    }
+
+    finalize set_approval_for_all(
+        owner: address,
+        operator: address,
+        approved: bool
+    ) {
+        approved_for_all.set(AddressPair {
+            nft_owner: owner,
+            nft_operator: operator
+        }, approved);
     }
 
 }

@@ -1,22 +1,25 @@
 // The 'program' program.
 import credits.leo;
-import aleo_name_service_registry_v1.leo;
+import aleo_name_service_registry_v2.leo;
 
-program ans_registrar_v1.aleo {
+program ans_registrar_v2.aleo {
     mapping general_settings: u8 => u128;
 
     function calc_price(name: [u128; 4]) -> u64 {
-        let mask: u128 = 255u128;
         let val: u128 = name[0u8];
-        let price: u64 = 1250000000u64;
-        for i: u8 in 1u8 .. 5u8 {
-            let new: u128 = val.shr(i * 8u8);
-            let b: u128 = new & mask;
-            if (b > 0u128) {
-                price /= 5u64;
-            }
+        if (val > 4294967295u128) {
+            return 2000000u64;
         }
-        return price;
+        if (val > 16777215u128) {
+            return 10000000u64;
+        }
+        if (val > 65535u128) {
+            return 50000000u64;
+        }
+        if (val > 255u128) {
+            return 250000000u64;
+        }
+        return 1250000000u64;
     }
 
     transition initialize() {
@@ -75,11 +78,11 @@ program ans_registrar_v1.aleo {
         // calc price
         let price: u64 = calc_price(name);
         // this program address receive credits
-        let program_address: address = aleo172lc2n6hcaqedj8kktf3sl03a5g8kt8hw0hj7vgp0d0tukn5w5pqcnruw0;
+        let program_address: address = aleo1tf9qymuyszzk38t0dyxgex9sk9s4mugajv6m9g49nuny2mna9q8sq06rhv;
         credits.leo/transfer_private_to_public(pay_record, program_address, price);
         // this is "ans" name hash
         let parent: field = 3601410589032411677092457044111621862970800028849492457114786804129430260029field;
-        aleo_name_service_registry_v1.leo/register(name, parent, receiver, 0u128);
+        aleo_name_service_registry_v2.leo/register(name, parent, receiver, 0u128);
         return then finalize();
     }
 

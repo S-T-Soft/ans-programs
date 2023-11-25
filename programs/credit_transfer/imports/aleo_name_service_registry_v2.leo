@@ -1,5 +1,5 @@
 // The 'program' program.
-program aleo_name_service_registry_v1.aleo {
+program aleo_name_service_registry_v2.aleo {
     record NFT {
         owner: address,
         data: field,  // this is the name_hash of the name
@@ -8,14 +8,14 @@ program aleo_name_service_registry_v1.aleo {
 
     // check if the name is owned by the address
     // this transition is use by other programs to check if the name is owned by the owner address
-    transition check_ownship(
+    transition is_owner(
         name_hash: field,
         owner: address
     ) {
         return then finalize(name_hash, owner);
     }
 
-    finalize check_ownship(
+    finalize is_owner(
         name_hash: field,
         owner: address
     ) {
