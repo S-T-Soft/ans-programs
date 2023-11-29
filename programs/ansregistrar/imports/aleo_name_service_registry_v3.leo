@@ -1,5 +1,5 @@
 // The 'program' program.
-program aleo_name_service_registry_v2.aleo {
+program aleo_name_service_registry_v3.aleo {
     record NFT {
         owner: address,
         data: field,  // this is the name_hash of the name

@@ -1,8 +1,8 @@
 // The 'credit_transfer' program.
 import credits.leo;
-import aleo_name_service_registry_v2.leo;
+import aleo_name_service_registry_v3.leo;
 
-program ans_credit_transfer_v2.aleo {
+program ans_credit_transfer_v3.aleo {
     // domain name holding amount
     mapping domain_credits: field => u64;
 
@@ -27,7 +27,7 @@ program ans_credit_transfer_v2.aleo {
 
     // claim the credits with private ans domain NFT and secret
     transition claim_credits_private (
-        nft: aleo_name_service_registry_v2.leo/NFT,
+        nft: aleo_name_service_registry_v3.leo/NFT,
         secret: [u128; 4], // the secret, 0-64 length ascii bits
         amount: u64
     ) {
@@ -52,7 +52,7 @@ program ans_credit_transfer_v2.aleo {
         secret: [u128; 4], // the secret, 0-64 length ascii bits
         amount: u64
     ) {
-        aleo_name_service_registry_v2.leo/is_owner(name_hash, self.caller);
+        aleo_name_service_registry_v3.leo/is_owner(name_hash, self.caller);
         credits.leo/transfer_public_to_private(self.caller, amount);
         let salt: scalar = Poseidon2::hash_to_scalar(secret);
         let name_secret_hash: field = BHP256::commit_to_field(name_hash, salt);

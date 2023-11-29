@@ -1,7 +1,7 @@
 import credits.leo;
 
 // The 'program' program.
-program aleo_name_service_registry_v2.aleo {
+program aleo_name_service_registry_v3.aleo {
     // base uri ascii bits. Include as many data pieces as necessary to encapsulate the uri. Padded with 0s at the end.
     struct BaseURI {
         data0: u128, // Part 1 of the base uri in bits. Bits should be the representation of the hexadecimal bytes for the ASCII text of the URL
@@ -476,10 +476,10 @@ program aleo_name_service_registry_v2.aleo {
 
         nft_owners.set(name_hash, receiver);
         // increase the version of the name, so all resolvers will be expired
-        let version: u64 = name_versions.get_or_use(name_hash, 0u64);
+        let version: u64 = name_versions.get_or_use(name_hash, 1u64);
         name_versions.set(name_hash, version + 1u64);
         // remove the primary name if the name is the primary name of the owner
-        let primary_name: field = primary_names.get_or_use(owner, name_hash);
+        let primary_name: field = primary_names.get_or_use(owner, 0field);
         if (primary_name == name_hash) {
             primary_names.remove(owner);
         }
@@ -535,10 +535,10 @@ program aleo_name_service_registry_v2.aleo {
 
         nft_owners.remove(name_hash);
         // increase the version of the name, so all resolvers will be expired
-        let version: u64 = name_versions.get_or_use(name_hash, 0u64);
+        let version: u64 = name_versions.get_or_use(name_hash, 1u64);
         name_versions.set(name_hash, version + 1u64);
         // remove the primary name if the name is the primary name of the owner
-        let primary_name: field = primary_names.get_or_use(owner, name_hash);
+        let primary_name: field = primary_names.get_or_use(owner, 0field);
         if (primary_name == name_hash) {
             primary_names.remove(owner);
         }
@@ -636,7 +636,7 @@ program aleo_name_service_registry_v2.aleo {
         category: u128
     ) {
         assert_eq(owner, nft_owners.get(name_hash));
-        let version: u64 = name_versions.get(name_hash);
+        let version: u64 = name_versions.get_or_use(name_hash, 1u64);
         let resolver_index: ResolverIndex = ResolverIndex {
             name: name_hash,
             category: category,
@@ -657,7 +657,7 @@ program aleo_name_service_registry_v2.aleo {
         owner: address
     ) {
         assert_eq(owner, nft_owners.get(name_hash));
-        let version: u64 = name_versions.get(name_hash);
+        let version: u64 = name_versions.get_or_use(name_hash, 1u64);
         name_versions.set(name_hash, version + 1u64);
     }
 

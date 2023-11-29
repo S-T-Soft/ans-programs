@@ -1,5 +1,5 @@
 import credits.aleo;
-program aleo_name_service_registry_v2.aleo;
+program aleo_name_service_registry_v3.aleo;
 
 
 struct BaseURI:
@@ -1258,7 +1258,7 @@ function initialize_collection:
     input r2 as BaseURI.public;
     hash.bhp256 self.caller into r3 as u128;
     async initialize_collection r0 r1 r3 r2 into r4;
-    output r4 as aleo_name_service_registry_v2.aleo/initialize_collection.future;
+    output r4 as aleo_name_service_registry_v3.aleo/initialize_collection.future;
 
 finalize initialize_collection:
     input r0 as u128.public;
@@ -1285,7 +1285,7 @@ function set_admin:
     hash.bhp256 self.caller into r1 as u128;
     hash.bhp256 r0 into r2 as u128;
     async set_admin r1 r2 into r3;
-    output r3 as aleo_name_service_registry_v2.aleo/set_admin.future;
+    output r3 as aleo_name_service_registry_v3.aleo/set_admin.future;
 
 finalize set_admin:
     input r0 as u128.public;
@@ -1299,7 +1299,7 @@ function set_mint_block:
     input r0 as u32.public;
     hash.bhp256 self.caller into r1 as u128;
     async set_mint_block r1 r0 into r2;
-    output r2 as aleo_name_service_registry_v2.aleo/set_mint_block.future;
+    output r2 as aleo_name_service_registry_v3.aleo/set_mint_block.future;
 
 finalize set_mint_block:
     input r0 as u128.public;
@@ -1316,7 +1316,7 @@ function update_base_uri:
     input r0 as BaseURI.public;
     hash.bhp256 self.caller into r1 as u128;
     async update_base_uri r1 r0 into r2;
-    output r2 as aleo_name_service_registry_v2.aleo/update_base_uri.future;
+    output r2 as aleo_name_service_registry_v3.aleo/update_base_uri.future;
 
 finalize update_base_uri:
     input r0 as u128.public;
@@ -1336,7 +1336,7 @@ function update_toggle_settings:
     input r0 as u32.public;
     hash.bhp256 self.caller into r1 as u128;
     async update_toggle_settings r1 r0 into r2;
-    output r2 as aleo_name_service_registry_v2.aleo/update_toggle_settings.future;
+    output r2 as aleo_name_service_registry_v3.aleo/update_toggle_settings.future;
 
 finalize update_toggle_settings:
     input r0 as u128.public;
@@ -1358,7 +1358,7 @@ function register_tld:
     hash.psd2 r2 into r3 as field;
     hash.bhp256 self.caller into r4 as u128;
     async register_tld r4 r0 r3 r1 into r5;
-    output r5 as aleo_name_service_registry_v2.aleo/register_tld.future;
+    output r5 as aleo_name_service_registry_v3.aleo/register_tld.future;
 
 finalize register_tld:
     input r0 as u128.public;
@@ -1384,7 +1384,7 @@ function register:
     cast r2 r6 0scalar into r7 as NFT.record;
     async register r6 r0 r1 r3 self.caller into r8;
     output r7 as NFT.record;
-    output r8 as aleo_name_service_registry_v2.aleo/register.future;
+    output r8 as aleo_name_service_registry_v3.aleo/register.future;
 
 finalize register:
     input r0 as field.public;
@@ -1420,7 +1420,7 @@ function register_private:
     async register_private r6 r0 r1.data r3 into r9;
     output r7 as NFT.record;
     output r8 as NFT.record;
-    output r9 as aleo_name_service_registry_v2.aleo/register_private.future;
+    output r9 as aleo_name_service_registry_v3.aleo/register_private.future;
 
 finalize register_private:
     input r0 as field.public;
@@ -1451,7 +1451,7 @@ function register_public:
     cast r2 r6 0scalar into r7 as NFT.record;
     async register_public r6 r0 r1 r3 self.signer into r8;
     output r7 as NFT.record;
-    output r8 as aleo_name_service_registry_v2.aleo/register_public.future;
+    output r8 as aleo_name_service_registry_v3.aleo/register_public.future;
 
 finalize register_public:
     input r0 as field.public;
@@ -1484,7 +1484,7 @@ function transfer_public:
     input r0 as address.private;
     input r1 as field.private;
     async transfer_public r0 r1 self.caller into r2;
-    output r2 as aleo_name_service_registry_v2.aleo/transfer_public.future;
+    output r2 as aleo_name_service_registry_v3.aleo/transfer_public.future;
 
 finalize transfer_public:
     input r0 as address.public;
@@ -1502,19 +1502,21 @@ finalize transfer_public:
     or r9 r10 into r11;
     assert.eq r11 true;
     set r0 into nft_owners[r1];
-    get.or_use name_versions[r1] 0u64 into r12;
+    get.or_use name_versions[r1] 1u64 into r12;
     add r12 1u64 into r13;
     set r13 into name_versions[r1];
-    get.or_use primary_names[r3] r1 into r14;
+    get.or_use primary_names[r3] 0field into r14;
     is.eq r14 r1 into r15;
+    branch.eq r15 false to end;
     remove primary_names[r3];
+    position end;
 
 
 function convert_private_to_public:
     input r0 as NFT.record;
     input r1 as address.private;
     async convert_private_to_public r1 r0.data into r2;
-    output r2 as aleo_name_service_registry_v2.aleo/convert_private_to_public.future;
+    output r2 as aleo_name_service_registry_v3.aleo/convert_private_to_public.future;
 
 finalize convert_private_to_public:
     input r0 as address.public;
@@ -1528,7 +1530,7 @@ function convert_public_to_private:
     cast r1 r0 0scalar into r2 as NFT.record;
     async convert_public_to_private self.caller r0 into r3;
     output r2 as NFT.record;
-    output r3 as aleo_name_service_registry_v2.aleo/convert_public_to_private.future;
+    output r3 as aleo_name_service_registry_v3.aleo/convert_public_to_private.future;
 
 finalize convert_public_to_private:
     input r0 as address.public;
@@ -1544,18 +1546,20 @@ finalize convert_public_to_private:
     or r8 r9 into r10;
     assert.eq r10 true;
     remove nft_owners[r1];
-    get.or_use name_versions[r1] 0u64 into r11;
+    get.or_use name_versions[r1] 1u64 into r11;
     add r11 1u64 into r12;
     set r12 into name_versions[r1];
-    get.or_use primary_names[r2] r1 into r13;
+    get.or_use primary_names[r2] 0field into r13;
     is.eq r13 r1 into r14;
+    branch.eq r14 false to end;
     remove primary_names[r2];
+    position end;
 
 
 function set_primary_name:
     input r0 as field.private;
     async set_primary_name r0 self.caller into r1;
-    output r1 as aleo_name_service_registry_v2.aleo/set_primary_name.future;
+    output r1 as aleo_name_service_registry_v3.aleo/set_primary_name.future;
 
 finalize set_primary_name:
     input r0 as field.public;
@@ -1567,7 +1571,7 @@ finalize set_primary_name:
 
 function unset_primary_name:
     async unset_primary_name self.caller into r0;
-    output r0 as aleo_name_service_registry_v2.aleo/unset_primary_name.future;
+    output r0 as aleo_name_service_registry_v3.aleo/unset_primary_name.future;
 
 finalize unset_primary_name:
     input r0 as address.public;
@@ -1578,7 +1582,7 @@ function set_resolver:
     input r0 as field.private;
     input r1 as u128.private;
     async set_resolver r0 self.caller r1 into r2;
-    output r2 as aleo_name_service_registry_v2.aleo/set_resolver.future;
+    output r2 as aleo_name_service_registry_v3.aleo/set_resolver.future;
 
 finalize set_resolver:
     input r0 as field.public;
@@ -1600,7 +1604,7 @@ function set_resolver_record:
     gt r2[0u32] 0u128 into r4;
     assert.eq r4 true;
     async set_resolver_record r0 self.caller r1 r2 into r5;
-    output r5 as aleo_name_service_registry_v2.aleo/set_resolver_record.future;
+    output r5 as aleo_name_service_registry_v3.aleo/set_resolver_record.future;
 
 finalize set_resolver_record:
     input r0 as field.public;
@@ -1618,7 +1622,7 @@ function unset_resolver_record:
     input r0 as field.private;
     input r1 as u128.private;
     async unset_resolver_record r0 self.caller r1 into r2;
-    output r2 as aleo_name_service_registry_v2.aleo/unset_resolver_record.future;
+    output r2 as aleo_name_service_registry_v3.aleo/unset_resolver_record.future;
 
 finalize unset_resolver_record:
     input r0 as field.public;
@@ -1626,7 +1630,7 @@ finalize unset_resolver_record:
     input r2 as u128.public;
     get nft_owners[r0] into r3;
     assert.eq r1 r3;
-    get name_versions[r0] into r4;
+    get.or_use name_versions[r0] 1u64 into r4;
     cast r0 r2 r4 into r5 as ResolverIndex;
     remove resolvers[r5];
 
@@ -1634,14 +1638,14 @@ finalize unset_resolver_record:
 function clear_resolver_record:
     input r0 as field.private;
     async clear_resolver_record r0 self.caller into r1;
-    output r1 as aleo_name_service_registry_v2.aleo/clear_resolver_record.future;
+    output r1 as aleo_name_service_registry_v3.aleo/clear_resolver_record.future;
 
 finalize clear_resolver_record:
     input r0 as field.public;
     input r1 as address.public;
     get nft_owners[r0] into r2;
     assert.eq r1 r2;
-    get name_versions[r0] into r3;
+    get.or_use name_versions[r0] 1u64 into r3;
     add r3 1u64 into r4;
     set r4 into name_versions[r0];
 
@@ -1650,7 +1654,7 @@ function is_owner:
     input r0 as field.private;
     input r1 as address.private;
     async is_owner r0 r1 into r2;
-    output r2 as aleo_name_service_registry_v2.aleo/is_owner.future;
+    output r2 as aleo_name_service_registry_v3.aleo/is_owner.future;
 
 finalize is_owner:
     input r0 as field.public;
@@ -1671,7 +1675,7 @@ function proof_ownership:
 function authorize:
     input r0 as NFT.record;
     async authorize into r1;
-    output r1 as aleo_name_service_registry_v2.aleo/authorize.future;
+    output r1 as aleo_name_service_registry_v3.aleo/authorize.future;
 
 finalize authorize:
     assert.eq 0u8 1u8;
@@ -1680,7 +1684,7 @@ finalize authorize:
 function burn:
     input r0 as NFT.record;
     async burn r0.data into r1;
-    output r1 as aleo_name_service_registry_v2.aleo/burn.future;
+    output r1 as aleo_name_service_registry_v3.aleo/burn.future;
 
 finalize burn:
     input r0 as field.public;
@@ -1690,7 +1694,7 @@ finalize burn:
 function is_available:
     input r0 as field.private;
     async is_available r0 into r1;
-    output r1 as aleo_name_service_registry_v2.aleo/is_available.future;
+    output r1 as aleo_name_service_registry_v3.aleo/is_available.future;
 
 finalize is_available:
     input r0 as field.public;
@@ -1702,7 +1706,7 @@ function approve:
     input r0 as address.private;
     input r1 as field.private;
     async approve self.caller r0 r1 into r2;
-    output r2 as aleo_name_service_registry_v2.aleo/approve.future;
+    output r2 as aleo_name_service_registry_v3.aleo/approve.future;
 
 finalize approve:
     input r0 as address.public;
@@ -1718,7 +1722,7 @@ function set_approval_for_all:
     input r0 as address.private;
     input r1 as boolean.private;
     async set_approval_for_all self.caller r0 r1 into r2;
-    output r2 as aleo_name_service_registry_v2.aleo/set_approval_for_all.future;
+    output r2 as aleo_name_service_registry_v3.aleo/set_approval_for_all.future;
 
 finalize set_approval_for_all:
     input r0 as address.public;
