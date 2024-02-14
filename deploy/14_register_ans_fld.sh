@@ -4,14 +4,12 @@ env="dev"
 
 # tld ans
 name=""
+parent="3601410589032411677092457044111621862970800028849492457114786804129430260029field"
 
 for arg in "$@"; do
   case $arg in
-    --env=dev)
-      shift
-      ;;
-    --env=prod)
-      env="prod"
+    --env=*)
+      env="${arg#*=}"
       shift
       ;;
     --name=*)
@@ -24,6 +22,11 @@ for arg in "$@"; do
       ;;
   esac
 done
+
+if [[ ! -f ${env}.env ]]; then
+  echo "Error: ${env}.env does not exist"
+  exit 1
+fi
 
 if [[ -z "$name" ]]; then
   echo "Error: --name parameter is required"
@@ -41,12 +44,12 @@ echo -e "Register \033[32m${name}.ans\033[0m from \033[32m${program}\033[0m in \
 if [[ -z "${FEE_RECORD}" ]]; then
   output=$(snarkos developer execute --private-key "${PRIVATE_KEY}" --query "${ENDPOINT}" \
            --broadcast "${ENDPOINT}/testnet3/transaction/broadcast" \
-           ${program} register_fld "${name_arr}" ${ADDRESS} "${RECORD}")
+           ${program} register_fld "${name_arr}" "${parent}" "${ADDRESS}" "${RECORD}")
 else
   output=$(snarkos developer execute --private-key "${PRIVATE_KEY}" --query "${ENDPOINT}" \
            --record "${FEE_RECORD}" \
            --broadcast "${ENDPOINT}/testnet3/transaction/broadcast" \
-           ${program} register_fld "${name_arr}" ${ADDRESS} "${RECORD}")
+           ${program} register_fld "${name_arr}" "${parent}" "${ADDRESS}" "${RECORD}")
 fi
 
 echo "${output}"

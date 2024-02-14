@@ -1,5 +1,3 @@
-import credits.leo;
-
 // The 'program' program.
 program aleo_name_service_registry_v3.aleo {
     // base uri ascii bits. Include as many data pieces as necessary to encapsulate the uri. Padded with 0s at the end.
@@ -249,22 +247,22 @@ program aleo_name_service_registry_v3.aleo {
     ) {
         let name_hash: field = calc_name_hash(tld, 0field);
         let hash_caller: u128 = BHP256::hash_to_u128(self.caller);
-        return then finalize(hash_caller, registrar, name_hash, tld);
+        let name_struct: NameStruct = NameStruct {
+            name: tld,
+            parent: 0field,
+            resolver: 0u128
+        };
+        return then finalize(hash_caller, registrar, name_hash, name_struct);
     }
 
     finalize register_tld(
         hash_caller: u128,
         registrar: address,
         name_hash: field,
-        name: [u128; 4]
+        name_struct: NameStruct
     ) {
         // check admin
         assert_eq(hash_caller, general_settings.get(7u8));
-        let name_struct: NameStruct = NameStruct {
-            name: name,
-            parent: 0field,
-            resolver: 0u128
-        };
         names.set(name_hash, name_struct);
         nft_owners.set(name_hash, registrar);
     }

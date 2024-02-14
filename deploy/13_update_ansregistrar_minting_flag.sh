@@ -4,11 +4,8 @@ env="dev"
 
 for arg in "$@"; do
   case $arg in
-    --env=dev)
-      shift
-      ;;
-    --env=prod)
-      env="prod"
+    --env=*)
+      env="${arg#*=}"
       shift
       ;;
     *)
@@ -17,6 +14,11 @@ for arg in "$@"; do
       ;;
   esac
 done
+
+if [[ ! -f ${env}.env ]]; then
+  echo "Error: ${env}.env does not exist"
+  exit 1
+fi
 
 root=$(pwd)
 env_file="${root}/${env}.env"
@@ -29,27 +31,27 @@ PRIVATE_KEY=${PRIVATE_KEY}" > .env
 
 program=`jq -r '.program' program.json`
 
-echo -e "Initialize \033[32m${program}\033[0m in \033[32m${env}\033[0m"
+echo -e "Update \033[32m${program}\033[0m Minting Flag in \033[32m${env}\033[0m"
 
 if [[ -z "${FEE_RECORD}" ]]; then
   output=$(snarkos developer execute --private-key "${PRIVATE_KEY}" --query "${ENDPOINT}" \
    --broadcast "${ENDPOINT}/testnet3/transaction/broadcast" \
-   ${program} initialize)
+   ${program} set_minting_flag 1u128 1u128)
 else
   output=$(snarkos developer execute --private-key "${PRIVATE_KEY}" --query "${ENDPOINT}" \
    --broadcast "${ENDPOINT}/testnet3/transaction/broadcast" \
    --record "${FEE_RECORD}" \
-   ${program} initialize)
+   ${program} set_minting_flag 1u128 1u128)
 fi
 
 echo "${output}"
 tx=$(echo ${output} | awk 'match($0, /[^0-9a-zA-Z](at[0-9a-zA-Z]+)[^0-9a-zA-Z]/) {print substr($0, RSTART + 1, RLENGTH - 2); exit}')
 
 if [[ -z "$tx" ]]; then
-  echo -e "Initialized \033[32m${program}\033[0m to \033[32m${env}\033[0m \033[31mFailed\033[0m"
+  echo -e "Update \033[32m${program}\033[0m to \033[32m${env}\033[0m \033[31mFailed\033[0m"
   exit 1
 else
-  echo -e "Initialized \033[32m${program}\033[0m to \033[32m${env}\033[0m successfully, tx: \033[32m${tx}\033[0m"
+  echo -e "Update \033[32m${program}\033[0m to \033[32m${env}\033[0m successfully, tx: \033[32m${tx}\033[0m"
 fi
 
 if [[ -n "${FEE_RECORD}" ]]; then

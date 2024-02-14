@@ -1,6 +1,18 @@
 {
-    "program": "ans_credit_transfer_v3.aleo",
-    "version": "0.0.0",
-    "description": "",
-    "license": "MIT"
+  "program": "ans_credit_transfer_v3.aleo",
+  "version": "0.0.0",
+  "description": "",
+  "license": "MIT",
+  "dependencies": [
+    {
+      "name": "credits.aleo",
+      "location": "network",
+      "network": "testnet3"
+    },
+    {
+      "name": "aleo_name_service_registry_v3.aleo",
+      "location": "network",
+      "network": "testnet3"
+    }
+  ]
 }

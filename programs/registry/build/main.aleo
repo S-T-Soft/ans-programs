@@ -1,6 +1,4 @@
-import credits.aleo;
 program aleo_name_service_registry_v3.aleo;
-
 
 struct BaseURI:
     data0 as u128;
@@ -1357,18 +1355,18 @@ function register_tld:
     cast r1 0field into r2 as Name;
     hash.psd2 r2 into r3 as field;
     hash.bhp256 self.caller into r4 as u128;
-    async register_tld r4 r0 r3 r1 into r5;
-    output r5 as aleo_name_service_registry_v3.aleo/register_tld.future;
+    cast r1 0field 0u128 into r5 as NameStruct;
+    async register_tld r4 r0 r3 r5 into r6;
+    output r6 as aleo_name_service_registry_v3.aleo/register_tld.future;
 
 finalize register_tld:
     input r0 as u128.public;
     input r1 as address.public;
     input r2 as field.public;
-    input r3 as [u128; 4u32].public;
+    input r3 as NameStruct.public;
     get general_settings[7u8] into r4;
     assert.eq r0 r4;
-    cast r3 0field 0u128 into r5 as NameStruct;
-    set r5 into names[r2];
+    set r3 into names[r2];
     set r1 into nft_owners[r2];
 
 
@@ -1507,9 +1505,7 @@ finalize transfer_public:
     set r13 into name_versions[r1];
     get.or_use primary_names[r3] 0field into r14;
     is.eq r14 r1 into r15;
-    branch.eq r15 false to end;
     remove primary_names[r3];
-    position end;
 
 
 function convert_private_to_public:
@@ -1551,9 +1547,7 @@ finalize convert_public_to_private:
     set r12 into name_versions[r1];
     get.or_use primary_names[r2] 0field into r13;
     is.eq r13 r1 into r14;
-    branch.eq r14 false to end;
     remove primary_names[r2];
-    position end;
 
 
 function set_primary_name:

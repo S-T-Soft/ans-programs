@@ -5,6 +5,16 @@ program ans_credit_transfer_v3.aleo;
 
 
 
+
+
+
+
+
+
+
+
+
+
 mapping domain_credits:
 	key as field.public;
 	value as u64.public;

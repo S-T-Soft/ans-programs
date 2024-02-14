@@ -22,7 +22,7 @@ fi
 
 source ${env}.env
 
-cd ../programs/credit_transfer || exit
+cd ../programs/ans_coupon_card || exit
 
 echo "NETWORK=${NETWORK}
 PRIVATE_KEY=${PRIVATE_KEY}" > .env

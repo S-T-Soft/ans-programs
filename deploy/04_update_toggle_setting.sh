@@ -5,11 +5,8 @@ setting=3u32
 
 for arg in "$@"; do
   case $arg in
-    --env=dev)
-      shift
-      ;;
-    --env=prod)
-      env="prod"
+    --env=*)
+      env="${arg#*=}"
       shift
       ;;
     *)
@@ -18,6 +15,11 @@ for arg in "$@"; do
       ;;
   esac
 done
+
+if [[ ! -f ${env}.env ]]; then
+  echo "Error: ${env}.env does not exist"
+  exit 1
+fi
 
 root=$(pwd)
 env_file="${root}/${env}.env"

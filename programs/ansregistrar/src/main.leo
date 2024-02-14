@@ -1,57 +1,74 @@
-// The 'program' program.
-import credits.leo;
-import aleo_name_service_registry_v3.leo;
+import credits.aleo;
+import ans_coupon_card_v1.aleo;
+import aleo_name_service_registry_v3.aleo;
 
-program ans_registrar_v3.aleo {
+program ans_registrar_v4.aleo {
     mapping general_settings: u8 => u128;
 
-    function calc_price(name: [u128; 4]) -> u64 {
+    function get_name_length(name: [u128; 4]) -> u8 {
         let val: u128 = name[0u8];
         if (val > 4294967295u128) {
-            return 2000000u64;
+            return 5u8;
         }
         if (val > 16777215u128) {
-            return 10000000u64;
+            return 4u8;
         }
         if (val > 65535u128) {
-            return 50000000u64;
+            return 3u8;
         }
         if (val > 255u128) {
+            return 2u8;
+        }
+        return 1u8;
+    }
+
+    function calc_price(length: u8) -> u64 {
+        if (length == 5u8) {
+            return 2000000u64;
+        }
+        if (length == 4u8) {
+            return 10000000u64;
+        }
+        if (length == 3u8) {
+            return 50000000u64;
+        }
+        if (length == 2u8) {
             return 250000000u64;
         }
         return 1250000000u64;
     }
 
-    transition initialize() {
+    transition initialize_registrar() {
         let admin: u128 = BHP256::hash_to_u128(self.caller);
         return then finalize(admin);
     }
 
-    finalize initialize(
+    finalize initialize_registrar(
         admin: u128
     ) {
         general_settings.set(0u8, admin);
-        // set the minting flag
-        general_settings.set(1u8, 1u128);
     }
 
     transition set_minting_flag(
-        flag: u128
+        flag: u128,
+        cc_flag: u128
     ) {
         let hash_caller: u128 = BHP256::hash_to_u128(self.caller);
-        return then finalize(hash_caller, flag);
+        return then finalize(hash_caller, flag, cc_flag);
     }
 
     finalize set_minting_flag(
         hash_caller: u128,
-        flag: u128
+        flag: u128,
+        cc_flag: u128
     ) {
         // check admin
         assert_eq(hash_caller, general_settings.get(0u8));
         general_settings.set(1u8, flag);
+        general_settings.set(2u8, cc_flag);
     }
 
-    transition set_admin(
+    transition change_admin(
         private admin: address
     ) {
         let hash_caller: u128 = BHP256::hash_to_u128(self.caller);
@@ -59,7 +76,7 @@ program ans_registrar_v3.aleo {
         return then finalize(hash_caller, new_admin);
     }
 
-    finalize set_admin(
+    finalize change_admin(
         public hash_caller: u128,
         public new_admin: u128
     ) {
@@ -68,21 +85,41 @@ program ans_registrar_v3.aleo {
         general_settings.set(7u8, new_admin); // Admin hash address
     }
 
+    // register with coupon card
+    transition register_free(
+        name: [u128; 4],
+        parent: field,
+        receiver: address,
+        card: ans_coupon_card_v1.aleo/CouponCard
+    ) {
+        assert_eq(card.discount_percent, 0u8);
+        assert(card.tld == parent || card.tld == 0field);
+        let length: u8 = get_name_length(name);
+        assert(length >= card.limit_name_length);
+        aleo_name_service_registry_v3.aleo/register(name, parent, receiver, 0u128);
+        ans_coupon_card_v1.aleo/use(card);
+        return then finalize();
+    }
+
+    finalize register_free() {
+        // check minting flag
+        assert_eq(general_settings.get(2u8), 1u128);
+    }
+
     // register a first level domain
-    // the self.caller must be the holder of parent ANS name, it can be a program or an account
     transition register_fld(
         name: [u128; 4],
+        parent: field,
         receiver: address,
-        pay_record: credits.leo/credits
+        pay_record: credits.aleo/credits
     ) {
+        let length: u8 = get_name_length(name);
         // calc price
-        let price: u64 = calc_price(name);
+        let price: u64 = calc_price(length);
         // this program address receive credits
-        let program_address: address = aleo1xx4hvsfpdytut05cc2g0au9x84uw6qrs66v32ufwde3d8ury0vgqqupmzk;
-        credits.leo/transfer_private_to_public(pay_record, program_address, price);
-        // this is "ans" name hash
-        let parent: field = 3601410589032411677092457044111621862970800028849492457114786804129430260029field;
-        aleo_name_service_registry_v3.leo/register(name, parent, receiver, 0u128);
+        let program_address: address = aleo1zqg7j94yne3e3kmwgs9h75yuz2ukw97w9xsvmdd32jnw8xz54cqsel9jrx;
+        credits.aleo/transfer_private_to_public(pay_record, program_address, price);
+        aleo_name_service_registry_v3.aleo/register(name, parent, receiver, 0u128);
         return then finalize();
     }
 
@@ -91,9 +128,37 @@ program ans_registrar_v3.aleo {
         assert_eq(general_settings.get(1u8), 1u128);
     }
 
+    // register with coupon card
+    transition register_fld_with_coupon(
+        name: [u128; 4],
+        parent: field,
+        receiver: address,
+        pay_record: credits.aleo/credits,
+        card: ans_coupon_card_v1.aleo/CouponCard
+    ) {
+        assert(card.tld == parent || card.tld == 0field);
+        let length: u8 = get_name_length(name);
+        assert(length >= card.limit_name_length);
+        // calc price
+        let price: u64 = calc_price(length);
+        // discount
+        price = price * card.discount_percent as u64 / 100u64;
+        // this program address receive credits
+        let program_address: address = aleo1zqg7j94yne3e3kmwgs9h75yuz2ukw97w9xsvmdd32jnw8xz54cqsel9jrx;
+        credits.aleo/transfer_private_to_public(pay_record, program_address, price);
+        aleo_name_service_registry_v3.aleo/register(name, parent, receiver, 0u128);
+        ans_coupon_card_v1.aleo/use(card);
+        return then finalize();
+    }
+
+    finalize register_fld_with_coupon() {
+        // check minting flag
+        assert_eq(general_settings.get(2u8), 1u128);
+    }
+
     transition claim(amount: u64, receiver: address) {
         let hash_caller: u128 = BHP256::hash_to_u128(self.caller);
-        credits.leo/transfer_public_to_private(receiver, amount);
+        credits.aleo/transfer_public_to_private(receiver, amount);
         return then finalize(hash_caller);
     }
 
@@ -101,5 +166,4 @@ program ans_registrar_v3.aleo {
         // check admin
         assert_eq(hash_caller, general_settings.get(0u8));
     }
-
 }
