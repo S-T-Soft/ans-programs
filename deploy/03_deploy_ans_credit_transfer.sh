@@ -32,9 +32,7 @@ leo build || exit 1
 program=`jq -r '.program' program.json`
 echo -e "Deploying \033[32m${program}\033[0m to \033[32m${env}\033[0m"
 
-output=$(snarkos developer deploy ${program} --private-key "$PRIVATE_KEY" --query ${ENDPOINT} \
- --broadcast "${ENDPOINT}/testnet3/transaction/broadcast" \
- --path "./build/" --priority-fee 1 || exit 1)
+output=$(leo deploy --private-key "$PRIVATE_KEY" --endpoint "${ENDPOINT}" --priority-fee 1 || exit 1)
 echo "${output}"
 tx=$(echo ${output} | awk 'match($0, /[^0-9a-zA-Z](at[0-9a-zA-Z]+)[^0-9a-zA-Z]/) {print substr($0, RSTART + 1, RLENGTH - 2); exit}')
 

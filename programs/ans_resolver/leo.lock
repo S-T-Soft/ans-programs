@@ -1,0 +1,6 @@
+[[package]]
+name = "aleo_name_service_registry_v1.aleo"
+location = "local"
+path = "/Users/snowtiger/PycharmProjects/ans-programs/programs/ans_resolver/../registry"
+checksum = "199daee002f083fede978d5bb40121f5884f20cda048cfaae5434039b0c1f627"
+dependencies = []

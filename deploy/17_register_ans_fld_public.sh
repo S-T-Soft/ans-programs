@@ -41,13 +41,8 @@ program=`jq -r '.program' ../programs/ansregistrar/program.json`
 
 echo -e "Register \033[32m${name}.ans\033[0m from \033[32m${program}\033[0m in \033[32m${env}\033[0m"
 
-if [[ -z "${FEE_RECORD}" ]]; then
-  output=$(leo execute -b --private-key "${PRIVATE_KEY}" --endpoint "${ENDPOINT}" \
-           -p ${program} --network "${NETWORK}" register_fld "${name_arr}" "${parent}" "${ADDRESS}" "${RECORD}")
-else
-  output=$(leo execute -b --private-key "${PRIVATE_KEY}" --endpoint "${ENDPOINT}" --record "${FEE_RECORD}" \
-           -p ${program} --network "${NETWORK}" register_fld "${name_arr}" "${parent}" "${ADDRESS}" "${RECORD}")
-fi
+output=$(leo execute -b --private-key "${PRIVATE_KEY}" --endpoint "${ENDPOINT}" \
+  -p ${program} --network "${NETWORK}" register_fld_public "${name_arr}" "${parent}" "${ADDRESS}")
 
 echo "${output}"
 tx=$(echo ${output} | awk 'match($0, /[^0-9a-zA-Z](at[0-9a-zA-Z]+)[^0-9a-zA-Z]/) {print substr($0, RSTART + 1, RLENGTH - 2); exit}')
@@ -57,10 +52,4 @@ if [[ -z "$tx" ]]; then
   exit 1
 else
   echo -e "Register \033[32m${name}.ans\033[0m from \033[32m${program}\033[0m in \033[32m${env}\033[0m successfully, tx: \033[32m${tx}\033[0m"
-fi
-
-if [[ -n "${FEE_RECORD}" ]]; then
-  sleep 30
-
-  ${root}/update_env.sh ${tx} ${env}.env ".fee.transition"
 fi

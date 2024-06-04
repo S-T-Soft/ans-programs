@@ -36,41 +36,14 @@ registrar=`jq -r '.program' ../programs/ansregistrar/program.json`
 
 name_arr=$(python3 -c "s = '$tld'; b = s.encode('utf-8') + b'\0' * (64 - len(s)); name = [int.from_bytes(b[i*16 : i*16+16], 'little') for i in range(4)]; print(f'[{name[0]}u128, {name[1]}u128, {name[2]}u128, {name[3]}u128]')")
 
-mkdir -p ../programs/get_address/src
-echo "import get_caller.aleo;
-program ${registrar} {
-    transition main() -> (address, address) {
-        return get_caller.aleo/who();
-    }
-}" > ../programs/get_address/src/main.leo
-echo "{
-    \"program\": \"${registrar}\",
-    \"version\": \"0.0.1\",
-    \"description\": \"\",
-    \"license\": \"MIT\",
-    \"dependencies\": [
-    {
-      \"name\": \"get_caller.aleo\",
-      \"location\": \"local\",
-      \"path\": \"get_caller\"
-    }
-  ]
-}" > ../programs/get_address/program.json
-
-cd ../programs/get_address || exit
-registrar_address=$(leo run | awk 'match($0, /aleo[0-9a-zA-Z]+/) {print substr($0, RSTART, RLENGTH); exit}')
-
-echo -e "Set tld \033[32m.${tld}(${name_arr})\033[0m to \033[32m${registrar}(${registrar_address})\033[0m in \033[32m${env}\033[0m"
+echo -e "Set tld \033[32m.${tld}(${name_arr})\033[0m to \033[32m${registrar}\033[0m in \033[32m${env}\033[0m"
 
 if [[ -z "${FEE_RECORD}" ]]; then
-  output=$(snarkos developer execute --private-key "${PRIVATE_KEY}" --query "${ENDPOINT}" \
-           --broadcast "${ENDPOINT}/testnet3/transaction/broadcast" \
-           ${program} register_tld "${registrar_address}" "${name_arr}")
+  output=$(leo execute -b --private-key "${PRIVATE_KEY}" --endpoint "${ENDPOINT}" \
+           -p ${program} --network "${NETWORK}" register_tld "${registrar}" "${name_arr}")
 else
-  output=$(snarkos developer execute --private-key "${PRIVATE_KEY}" --query "${ENDPOINT}" \
-           --record "${FEE_RECORD}" \
-           --broadcast "${ENDPOINT}/testnet3/transaction/broadcast" \
-           ${program} register_tld "${registrar_address}" "${name_arr}")
+  output=$(leo execute -b --private-key "${PRIVATE_KEY}" --endpoint "${ENDPOINT}" --record "${FEE_RECORD}" \
+           -p ${program} --network "${NETWORK}" register_tld "${registrar}" "${name_arr}")
 fi
 
 echo "${output}"

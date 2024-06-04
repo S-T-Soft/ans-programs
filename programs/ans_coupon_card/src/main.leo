@@ -17,26 +17,26 @@ program ans_coupon_card_v1.aleo {
     mapping cb_uuids: u128 => bool;
     mapping cb_address: u128 => bool;
 
-    transition initialize() {
+    async transition initialize() -> Future {
         let admin: u128 = BHP256::hash_to_u128(self.caller);
-        return then finalize(admin);
+        return finalize_initialize(admin);
     }
 
-    finalize initialize(
+    async function finalize_initialize(
         admin: u128
     ) {
         general_settings.set(0u8, admin);
     }
 
-    transition set_setting(
+    async transition update_toggle_settings(
         private key: u8,
         private value: u128
-    ) {
+    ) -> Future {
         let hash_caller: u128 = BHP256::hash_to_u128(self.caller);
-        return then finalize(hash_caller, key, value);
+        return finalize_update_toggle_settings(hash_caller, key, value);
     }
 
-    finalize set_setting(
+    async function finalize_update_toggle_settings(
         public hash_caller: u128,
         public key: u8,
         public value: u128
@@ -47,12 +47,12 @@ program ans_coupon_card_v1.aleo {
     }
 
     // issue a coupon card
-    transition issue_coupon_card(
+    async transition issue_coupon_card(
         receiver: address,
         discount_percent: u8,
         limit_name_length: u8,
         tld: field
-    ) -> CouponCard {
+    ) -> (CouponCard, Future) {
         assert(discount_percent <= 100u8);
         let card: CouponCard = CouponCard{
             owner: receiver,
@@ -61,10 +61,10 @@ program ans_coupon_card_v1.aleo {
             tld: tld
         };
         let hash_caller: u128 = BHP256::hash_to_u128(self.caller);
-        return card then finalize(hash_caller);
+        return (card, finalize_issue_coupon_card(hash_caller));
     }
 
-    finalize issue_coupon_card(
+    async function finalize_issue_coupon_card(
         hash_caller: u128
     ) {
         // check admin
@@ -72,10 +72,10 @@ program ans_coupon_card_v1.aleo {
     }
 
     // issue a coupon card
-    transition issue_coupon_card_cb(
+    async transition issue_coupon_card_cb(
         receiver: address,
         cb_uuid: [u128; 4]
-    ) -> CouponCard {
+    ) -> (CouponCard, Future) {
         let card: CouponCard = CouponCard {
             owner: receiver,
             discount_percent: 0u8,
@@ -86,10 +86,10 @@ program ans_coupon_card_v1.aleo {
         let hash_receiver: u128 = BHP256::hash_to_u128(receiver);
         let hash_cb_uuid: u128 = BHP256::hash_to_u128(cb_uuid);
         let hash_caller: u128 = BHP256::hash_to_u128(self.caller);
-        return card then finalize(hash_caller, hash_receiver, hash_cb_uuid);
+        return (card, finalize_issue_coupon_card_cb(hash_caller, hash_receiver, hash_cb_uuid));
     }
 
-    finalize issue_coupon_card_cb(
+    async function finalize_issue_coupon_card_cb(
         hash_caller: u128,
         hash_receiver: u128,
         hash_cb_uuid: u128

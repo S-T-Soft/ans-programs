@@ -1,18 +1,11 @@
-// The 'program' program.
-program aleo_name_service_registry_v3.aleo {
+// The 'register' program.
+program aleo_name_service_registry_v1.aleo {
     // base uri ascii bits. Include as many data pieces as necessary to encapsulate the uri. Padded with 0s at the end.
     struct BaseURI {
         data0: u128, // Part 1 of the base uri in bits. Bits should be the representation of the hexadecimal bytes for the ASCII text of the URL
         data1: u128,
         data2: u128,
         data3: u128
-    }
-
-    // Structure holding a name_hash and its type
-    struct ResolverIndex {
-        name: field, // The name_hash
-        category: u128, // The type of the resolver, can contain 16 characters in maximum
-        version: u64 // The version of the name
     }
 
     // Structure holding the ASCII bits of a domain name. If the length of the bits is less than 512,
@@ -26,7 +19,7 @@ program aleo_name_service_registry_v3.aleo {
     struct NameStruct {
         name: [u128; 4],
         parent: field,
-        resolver: u128 // the resolver program, 0 means current program
+        resolver: u128 // the resolver program, 0 means default resolver program
     }
 
     struct AddressPair {
@@ -45,14 +38,6 @@ program aleo_name_service_registry_v3.aleo {
         edition: scalar
     }
 
-    // a way to prove ownership of an nft privately
-    record NFT_ownership {
-        owner: address,
-        nft_owner: address,
-        data: field,  // this is the name_hash of the name
-        edition: scalar
-    }
-
     // Mappings for different data structures
     // Store public domain to address
     // For top level domains, the address is the registrar
@@ -61,8 +46,6 @@ program aleo_name_service_registry_v3.aleo {
     mapping names: field => NameStruct;
     // Mapping from an address to a primary name
     mapping primary_names: address => field;
-    // Mapping from a ResolverIndex structure to an Name array(string), max 128 ASCII characters
-    mapping resolvers: ResolverIndex => [u128; 8];
     // Mapping from a name_hash to a version number
     mapping name_versions: field => u64;
 
@@ -75,7 +58,7 @@ program aleo_name_service_registry_v3.aleo {
     mapping general_settings: u8 => u128;
     mapping toggle_settings: u8 => u32;
 
-    inline calc_name_hash(name: [u128; 4], parent: field) -> field {
+    function calc_name_hash(name: [u128; 4], parent: field) -> field {
         let full_name: Name = Name {
             name: name,
             parent: parent
@@ -85,10 +68,9 @@ program aleo_name_service_registry_v3.aleo {
 
     // Validate the ASCII bits of a domain name
     inline validate_name_bit(val: u128) -> bool {
-        let mask: u128 = 255u128;
         for i: u8 in 0u8 .. 16u8 {
             let new: u128 = val.shr(i * 8u8);
-            let b: u128 = new & mask;
+            let b: u128 = new & 255u128;
             // Check if the ASCII bit is valid, 0-9, a-z, -, _
             if (! (b == 0u128 || b == 45u128 || b == 95u128 || (b >= 48u128 && b <= 57u128) || (b >= 97u128 && b <= 122u128))) {
                 return false;
@@ -107,17 +89,17 @@ program aleo_name_service_registry_v3.aleo {
         return is_valid;
     }
 
-    transition initialize_collection(
+    async transition initialize_collection(
         public total: u128,
         public symbol: u128,
         public base_uri: BaseURI,
-    ) {
+    ) -> Future {
         // set the caller to admin
         let admin: u128 = BHP256::hash_to_u128(self.caller);
-        return then finalize(total, symbol, admin, base_uri);
+        return finalize_initialize_collection(total, symbol, admin, base_uri);
     }
 
-    finalize initialize_collection(
+    async function finalize_initialize_collection(
         public total: u128,
         public symbol: u128,
         public admin: u128,
@@ -142,18 +124,17 @@ program aleo_name_service_registry_v3.aleo {
         // defaults -- not frozen, not minting, initialized
         // 0b0000...0001 = 1u32.
         toggle_settings.set(0u8, 1u32);
-        toggle_settings.set(1u8, 0u32); // block height when mint is allowed
     }
 
-    transition set_admin(
+    async transition set_admin(
         private admin: address
-    ) {
+    ) -> Future {
         let hash_caller: u128 = BHP256::hash_to_u128(self.caller);
         let new_admin: u128 = BHP256::hash_to_u128(admin);
-        return then finalize(hash_caller, new_admin);
+        return finalize_set_admin(hash_caller, new_admin);
     }
 
-    finalize set_admin(
+    async function finalize_set_admin(
         public hash_caller: u128,
         public new_admin: u128
     ) {
@@ -162,37 +143,14 @@ program aleo_name_service_registry_v3.aleo {
         general_settings.set(7u8, new_admin); // Admin hash address
     }
 
-    transition set_mint_block(
-        public mint_block: u32
-    ) {
-        let hash_caller: u128 = BHP256::hash_to_u128(self.caller);
-        return then finalize(hash_caller, mint_block);
-    }
-
-    finalize set_mint_block(
-        public hash_caller: u128,
-        public mint_block: u32
-    ) {
-        // check admin
-        assert_eq(hash_caller, general_settings.get(7u8));
-        // Ensure collection is initialized and not frozen.
-        let toggle_settings_status: u32 = toggle_settings.get(0u8);
-        // initialized & frozen flags = 0b0000...1001 = 9u32
-        // what the settings should be = 0b0000...0001 = 1u32
-        let is_initialized_and_not_frozen: u32 = toggle_settings_status & 9u32;
-        assert_eq(is_initialized_and_not_frozen, 1u32);
-
-        toggle_settings.set(1u8, mint_block);
-    }
-
-    transition update_base_uri(
+    async transition update_base_uri(
         public base_uri: BaseURI
-    ) {
+    ) -> Future {
         let hash_caller: u128 = BHP256::hash_to_u128(self.caller);
-        return then finalize(hash_caller, base_uri);
+        return finalize_update_base_uri(hash_caller, base_uri);
     }
 
-    finalize update_base_uri(
+    async function finalize_update_base_uri(
         public hash_caller: u128,
         public base_uri: BaseURI
     ) {
@@ -212,14 +170,14 @@ program aleo_name_service_registry_v3.aleo {
     }
 
     // call this function to toggle minting, the whitelist requirement, or to permanently freeze the contract
-    transition update_toggle_settings(
+    async transition update_toggle_settings(
         public toggle_settings_bitstring: u32
-    ) {
+    ) -> Future {
         let hash_caller: u128 = BHP256::hash_to_u128(self.caller);
-        return then finalize(hash_caller, toggle_settings_bitstring);
+        return finalize_update_toggle_settings(hash_caller, toggle_settings_bitstring);
     }
 
-    finalize update_toggle_settings(
+    async function finalize_update_toggle_settings(
         public hash_caller: u128,
         public toggle_settings_bitstring: u32
     ) {
@@ -241,10 +199,10 @@ program aleo_name_service_registry_v3.aleo {
 
     // register a top level domain
     // only admin can call this function
-    transition register_tld(
+    async transition register_tld(
         registrar: address,
         tld: [u128; 4]
-    ) {
+    ) -> Future {
         let name_hash: field = calc_name_hash(tld, 0field);
         let hash_caller: u128 = BHP256::hash_to_u128(self.caller);
         let name_struct: NameStruct = NameStruct {
@@ -252,10 +210,10 @@ program aleo_name_service_registry_v3.aleo {
             parent: 0field,
             resolver: 0u128
         };
-        return then finalize(hash_caller, registrar, name_hash, name_struct);
+        return finalize_register_tld(hash_caller, registrar, name_hash, name_struct);
     }
 
-    finalize register_tld(
+    async function finalize_register_tld(
         hash_caller: u128,
         registrar: address,
         name_hash: field,
@@ -269,12 +227,12 @@ program aleo_name_service_registry_v3.aleo {
 
     // register a sub domain
     // the self.caller must be the holder of parent ANS name, it can be a program or an account
-    transition register(
+    async transition register(
         name: [u128; 4],
         parent: field,
         receiver: address,
         resolver: u128
-    ) -> NFT {
+    ) -> (NFT, Future) {
         // Validate the name before registration
         assert(validate_name(name));
         let name_hash: field = calc_name_hash(name, parent);
@@ -283,12 +241,12 @@ program aleo_name_service_registry_v3.aleo {
             data: name_hash,
             edition: 0scalar
         };
-        return nft then finalize(name_hash, name, parent, resolver, self.caller);
+        return (nft, finalize_register(name_hash, name, parent, resolver, self.caller));
     }
 
     // Register subdomain of a name
     // The parent domain must public, and the caller must be the owner of the parent domain
-    finalize register(
+    async function finalize_register(
         name_hash: field,
         name: [u128; 4],
         parent: field,
@@ -300,11 +258,6 @@ program aleo_name_service_registry_v3.aleo {
         assert_eq(caller, nft_owners.get(parent));
         // Check if the name has already been registered
         assert_eq(names.contains(name_hash), false);
-
-        // Ensure mint block height is less than current block height
-        let mint_block: u32 = toggle_settings.get(1u8);
-        let passed_height_check: bool = mint_block <= block.height;
-        assert_eq(passed_height_check, true);
 
         // Ensure minting is allowed, and is initialized,
         let toggle_settings_status: u32 = toggle_settings.get(0u8);
@@ -321,12 +274,12 @@ program aleo_name_service_registry_v3.aleo {
         names.set(name_hash, name_struct);
     }
 
-    transition register_private(
+    async transition register_private(
         name: [u128; 4],
         parent: NFT,
         receiver: address,
         resolver: u128
-    ) -> (NFT, NFT) {
+    ) -> (NFT, NFT, Future) {
         // Validate the name before registration
         assert(validate_name(name));
         let name_hash: field = calc_name_hash(name, parent.data);
@@ -340,11 +293,11 @@ program aleo_name_service_registry_v3.aleo {
             data: parent.data,
             edition: parent.edition
         };
-        return (nft, new_parent) then finalize(name_hash, name, parent.data, resolver);
+        return (nft, new_parent, finalize_register_private(name_hash, name, parent.data, resolver));
     }
 
     // Register subdomain of a name
-    finalize register_private(
+    async function finalize_register_private(
         name_hash: field,
         name: [u128; 4],
         parent: field,
@@ -352,11 +305,6 @@ program aleo_name_service_registry_v3.aleo {
     ) {
         // Check if the name has already been registered
         assert_eq(names.contains(name_hash), false);
-
-        // Ensure mint block height is less than current block height
-        let mint_block: u32 = toggle_settings.get(1u8);
-        let passed_height_check: bool = mint_block <= block.height;
-        assert_eq(passed_height_check, true);
 
         // Ensure minting is allowed, and is initialized,
         let toggle_settings_status: u32 = toggle_settings.get(0u8);
@@ -377,12 +325,12 @@ program aleo_name_service_registry_v3.aleo {
     // instead, the signer must be the owner of the parent name
     // that means, the owner of the parent name must be an account not a program
     // a program can call register_public to register a subname of a domain owned by an account
-    transition register_public(
+    async transition register_public(
         name: [u128; 4],
         parent: field,
         receiver: address,
         resolver: u128
-    ) -> NFT {
+    ) -> (NFT, Future) {
         // Validate the name before registration
         assert(validate_name(name));
         let name_hash: field = calc_name_hash(name, parent);
@@ -391,12 +339,12 @@ program aleo_name_service_registry_v3.aleo {
             data: name_hash,
             edition: 0scalar
         };
-        return nft then finalize(name_hash, name, parent, resolver, self.signer);
+        return (nft, finalize_register_public(name_hash, name, parent, resolver, self.signer));
     }
 
     // Register subdomain of a name
     // The parent domain must public, and the caller must be the owner of the parent domain
-    finalize register_public(
+    async function finalize_register_public(
         name_hash: field,
         name: [u128; 4],
         parent: field,
@@ -408,11 +356,6 @@ program aleo_name_service_registry_v3.aleo {
         assert_eq(caller, nft_owners.get(parent));
         // Check if the name has already been registered
         assert_eq(names.contains(name_hash), false);
-
-        // Ensure mint block height is less than current block height
-        let mint_block: u32 = toggle_settings.get(1u8);
-        let passed_height_check: bool = mint_block <= block.height;
-        assert_eq(passed_height_check, true);
 
         // Ensure minting is allowed, and is initialized,
         let toggle_settings_status: u32 = toggle_settings.get(0u8);
@@ -441,21 +384,19 @@ program aleo_name_service_registry_v3.aleo {
         };
     }
 
-    transition transfer_public(
+    async transition transfer_public(
         private receiver: address,
         private name_hash: field
-    )
-    {
-        return then finalize(receiver, name_hash, self.caller);
+    ) -> Future {
+        return finalize_transfer_public(receiver, name_hash, self.caller);
     }
 
-    finalize transfer_public(
+    async function finalize_transfer_public(
         receiver: address,
         name_hash: field,
         caller: address
     )
     {
-        assert_neq(caller, receiver);
         // check if the caller is the owner of the name or approved by the owner
         let owner: address = nft_owners.get(name_hash);
         let name_address_pair: NameAddressPair = NameAddressPair {
@@ -478,20 +419,19 @@ program aleo_name_service_registry_v3.aleo {
         name_versions.set(name_hash, version + 1u64);
         // remove the primary name if the name is the primary name of the owner
         let primary_name: field = primary_names.get_or_use(owner, 0field);
-        if (primary_name == name_hash) {
+        if (primary_name == name_hash && owner != receiver) {
             primary_names.remove(owner);
         }
     }
 
-    transition convert_private_to_public(
+    async transition transfer_private_to_public(
         nft: NFT,
         private receiver: address
-    )
-    {
-        return then finalize(receiver, nft.data);
+    ) -> Future {
+        return finalize_transfer_private_to_public(receiver, nft.data);
     }
 
-    finalize convert_private_to_public(
+    async function finalize_transfer_private_to_public(
         public owner: address,
         public name_hash: field
     )
@@ -499,38 +439,25 @@ program aleo_name_service_registry_v3.aleo {
         nft_owners.set(name_hash, owner);
     }
 
-    transition convert_public_to_private(
+    async transition transfer_public_to_private(
         private name_hash: field,
         private receiver: address
-    ) -> NFT
-    {
-        return NFT {
+    ) -> (NFT, Future) {
+        let nft: NFT = NFT {
             owner: receiver,
             data: name_hash,
             edition: 0scalar
-        } then finalize(self.caller, name_hash);
+        };
+        return (nft, finalize_transfer_public_to_private(self.caller, name_hash));
     }
 
-    finalize convert_public_to_private(
-        public caller: address,
+    async function finalize_transfer_public_to_private(
+        public owner: address,
         public name_hash: field
     )
     {
-        // check if the caller is the owner of the name or approved by the owner
-        let owner: address = nft_owners.get(name_hash);
-        let name_address_pair: NameAddressPair = NameAddressPair {
-            name_hash: name_hash,
-            nft_owner: owner
-        };
-        let address_pair: AddressPair = AddressPair {
-            nft_owner: owner,
-            nft_operator: caller
-        };
-        // Since this is a public name, this operation will not disclose any additional information.
-        assert(caller == owner ||
-           approved_for_nft.get_or_use(name_address_pair, owner) == caller ||
-           approved_for_all.get_or_use(address_pair, false));
-
+        // check if the caller is the owner of the name
+        assert_eq(owner, nft_owners.get(name_hash));
         nft_owners.remove(name_hash);
         // increase the version of the name, so all resolvers will be expired
         let version: u64 = name_versions.get_or_use(name_hash, 1u64);
@@ -542,13 +469,13 @@ program aleo_name_service_registry_v3.aleo {
         }
     }
 
-    transition set_primary_name(
+    async transition set_primary_name(
         name_hash: field
-    ) {
-        return then finalize(name_hash, self.caller);
+    ) -> Future {
+        return finalize_set_primary_name(name_hash, self.caller);
     }
 
-    finalize set_primary_name(
+    async function finalize_set_primary_name(
         name_hash: field,
         owner: address
     ) {
@@ -556,11 +483,11 @@ program aleo_name_service_registry_v3.aleo {
         primary_names.set(owner, name_hash);
     }
 
-    transition unset_primary_name() {
-        return then finalize(self.caller);
+    async transition unset_primary_name() -> Future {
+        return finalize_unset_primary_name(self.caller);
     }
 
-    finalize unset_primary_name(
+    async function finalize_unset_primary_name(
         owner: address
     ) {
         primary_names.remove(owner);
@@ -568,14 +495,14 @@ program aleo_name_service_registry_v3.aleo {
 
     // set resolver
     // this will update the resolver of the name in names mapping
-    transition set_resolver(
+    async transition set_resolver(
         name_hash: field,
         resolver: u128
-    ) {
-        return then finalize(name_hash, self.caller, resolver);
+    ) -> Future {
+        return finalize_set_resolver(name_hash, self.caller, resolver);
     }
 
-    finalize set_resolver(
+    async function finalize_set_resolver(
         name_hash: field,
         owner: address,
         resolver: u128
@@ -590,164 +517,46 @@ program aleo_name_service_registry_v3.aleo {
         names.set(name_hash, new_name_struct);
     }
 
-    // set resolver record
-    // category is the bits of the category string, u128 can store max of 16 characters
-    // for example, "btc" is 6517858u128, "eth" is 6845541u128, "twitter" is 32199698188695412u128
-    transition set_resolver_record(
-        name_hash: field,
-        category: u128,
-        content: [u128; 8]
-    ) {
-        assert(category > 0u128);
-        // ensure the content is not empty
-        assert(content[0u8] > 0u128);
-        return then finalize(name_hash, self.caller, category, content);
-    }
-
-    finalize set_resolver_record(
-        name_hash: field,
-        owner: address,
-        category: u128,
-        content: [u128; 8]
-    ) {
-        assert_eq(owner, nft_owners.get(name_hash));
-        let version: u64 = name_versions.get_or_use(name_hash, 1u64);
-        let resolver_index: ResolverIndex = ResolverIndex {
-            name: name_hash,
-            category: category,
-            version: version
-        };
-        resolvers.set(resolver_index, content);
-    }
-
-    transition unset_resolver_record(
-        name_hash: field,
-        category: u128
-    ) {
-        return then finalize(name_hash, self.caller, category);
-    }
-
-    // increase the version of the resolver, so the resolver record will be expired
-    finalize unset_resolver_record(
-        name_hash: field,
-        owner: address,
-        category: u128
-    ) {
-        assert_eq(owner, nft_owners.get(name_hash));
-        let version: u64 = name_versions.get_or_use(name_hash, 1u64);
-        let resolver_index: ResolverIndex = ResolverIndex {
-            name: name_hash,
-            category: category,
-            version: version
-        };
-        resolvers.remove(resolver_index);
-    }
-
-    transition clear_resolver_record(
-        name_hash: field
-    ) {
-        return then finalize(name_hash, self.caller);
-    }
-
-    // increase the version of the name, so all resolvers will be expired
-    finalize clear_resolver_record(
-        name_hash: field,
-        owner: address
-    ) {
-        assert_eq(owner, nft_owners.get(name_hash));
-        let version: u64 = name_versions.get_or_use(name_hash, 1u64);
-        name_versions.set(name_hash, version + 1u64);
-    }
-
-    // check if the name is owned by the address
-    // this transition is use by other programs to check if the name is owned by the owner address
-    transition is_owner(
-        name_hash: field,
-        owner: address
-    ) {
-        return then finalize(name_hash, owner);
-    }
-
-    finalize is_owner(
-        name_hash: field,
-        owner: address
-    ) {
-        assert_eq(owner, nft_owners.get(name_hash));
-    }
-
     // Proof that you own an nft without revealing the nft.
     // this never actually destroys the nft as the finalize
     // block is guaranteed to fail.
-    transition proof_ownership(
-        nft: NFT,
-        receiver: address
-    ) -> (NFT, NFT_ownership)
-    {
-        let nft_ownership: NFT_ownership = NFT_ownership {
-            owner: receiver,
-            nft_owner: nft.owner,
-            data: nft.data,
-            edition: nft.edition
-        };
-        let new_nft: NFT = NFT {
-            owner: nft.owner,
-            data: nft.data,
-            edition: nft.edition
-        };
-        return (new_nft, nft_ownership);
-    }
-
-    // Proof that you own an nft without revealing the nft.
-    // this never actually destroys the nft as the finalize
-    // block is guaranteed to fail.
-    transition authorize(
+    async transition authorize(
         nft: NFT
-    ) {
-        return then finalize();
+    ) -> Future {
+        return finalize_authorize();
     }
 
-    finalize authorize() {
+    async function finalize_authorize() {
         // fails on purpose, so that the nft is not burned.
         assert_eq(0u8, 1u8);
     }
 
     // this will actually destroys the nft
-    transition burn(
+    async transition burn(
         nft: NFT
-    ) {
-        return then finalize(nft.data);
+    ) -> Future {
+        return finalize_burn(nft.data);
     }
 
-    finalize burn(name_hash: field) {
+    async function finalize_burn(name_hash: field) {
         names.remove(name_hash);
-    }
-
-    transition is_available(
-        name_hash: field
-    ) -> bool {
-        return then finalize(name_hash);
-    }
-
-    finalize is_available(name_hash: field) {
-        assert_eq(names.contains(name_hash), false);
     }
 
     // Approves another address to transfer the given public name_hash The zero address indicates there is no approved address.
     // There can only be one approved address per name at a given time.
     // Can only be called by the name owner
-    transition approve(
+    async transition approve(
         to: address,
         name_hash: field
-    ) {
-        return then finalize(self.caller, to, name_hash);
+    ) -> Future {
+        return finalize_approve(self.caller, to, name_hash);
     }
 
-    finalize approve(
+    async function finalize_approve(
         owner: address,
         to: address,
         name_hash: field
     ) {
-        assert_eq(owner, nft_owners.get(name_hash));
         approved_for_nft.set(NameAddressPair {
             name_hash: name_hash,
             nft_owner: owner
@@ -755,14 +564,14 @@ program aleo_name_service_registry_v3.aleo {
     }
 
     // Sets or unsets the approval of a given operator An operator is allowed to transfer all public names of the sender on their behalf.
-    transition set_approval_for_all(
+    async transition set_approval_for_all(
         operator: address,
         approved: bool
-    ) {
-        return then finalize(self.caller, operator, approved);
+    ) -> Future {
+        return finalize_set_approval_for_all(self.caller, operator, approved);
     }
 
-    finalize set_approval_for_all(
+    async function finalize_set_approval_for_all(
         owner: address,
         operator: address,
         approved: bool

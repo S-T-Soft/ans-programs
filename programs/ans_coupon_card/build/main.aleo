@@ -21,6 +21,7 @@ mapping cb_address:
 	key as u128.public;
 	value as boolean.public;
 
+
 function initialize:
     hash.bhp256 self.caller into r0 as u128;
     async initialize r0 into r1;
@@ -31,20 +32,24 @@ finalize initialize:
     set r0 into general_settings[0u8];
 
 
-function set_setting:
+
+
+function update_toggle_settings:
     input r0 as u8.private;
     input r1 as u128.private;
     hash.bhp256 self.caller into r2 as u128;
-    async set_setting r2 r0 r1 into r3;
-    output r3 as ans_coupon_card_v1.aleo/set_setting.future;
+    async update_toggle_settings r2 r0 r1 into r3;
+    output r3 as ans_coupon_card_v1.aleo/update_toggle_settings.future;
 
-finalize set_setting:
+finalize update_toggle_settings:
     input r0 as u128.public;
     input r1 as u8.public;
     input r2 as u128.public;
     get general_settings[0u8] into r3;
     assert.eq r0 r3;
     set r2 into general_settings[r1];
+
+
 
 
 function issue_coupon_card:
@@ -64,6 +69,8 @@ finalize issue_coupon_card:
     input r0 as u128.public;
     get general_settings[0u8] into r1;
     assert.eq r0 r1;
+
+
 
 
 function issue_coupon_card_cb:
@@ -95,6 +102,7 @@ finalize issue_coupon_card_cb:
     set true into cb_address[r1];
     add r6 1u128 into r9;
     set r9 into general_settings[3u8];
+
 
 
 function use:

@@ -34,14 +34,11 @@ program=`jq -r '.program' program.json`
 echo -e "Update \033[32m${program}\033[0m Minting Flag in \033[32m${env}\033[0m"
 
 if [[ -z "${FEE_RECORD}" ]]; then
-  output=$(snarkos developer execute --private-key "${PRIVATE_KEY}" --query "${ENDPOINT}" \
-   --broadcast "${ENDPOINT}/testnet3/transaction/broadcast" \
-   ${program} set_minting_flag 1u128 1u128)
+  output=$(leo execute -b --private-key "${PRIVATE_KEY}" --endpoint "${ENDPOINT}" \
+   -p ${program} --network "${NETWORK}" set_minting_flag 1u128 1u128)
 else
-  output=$(snarkos developer execute --private-key "${PRIVATE_KEY}" --query "${ENDPOINT}" \
-   --broadcast "${ENDPOINT}/testnet3/transaction/broadcast" \
-   --record "${FEE_RECORD}" \
-   ${program} set_minting_flag 1u128 1u128)
+  output=$(leo execute -b --private-key "${PRIVATE_KEY}" --endpoint "${ENDPOINT}" --record "${FEE_RECORD}" \
+   -p ${program} --network "${NETWORK}" set_minting_flag 1u128 1u128)
 fi
 
 echo "${output}"

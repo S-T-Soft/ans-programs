@@ -35,14 +35,11 @@ program=`jq -r '.program' program.json`
 echo -e "Set setting \033[32m${setting}\033[0m for \033[32m${program}\033[0m in \033[32m${env}\033[0m"
 
 if [[ -z "${FEE_RECORD}" ]]; then
-  output=$(snarkos developer execute --private-key "${PRIVATE_KEY}" --query "${ENDPOINT}" \
-   --broadcast "${ENDPOINT}/testnet3/transaction/broadcast" \
-   ${program} update_toggle_settings ${setting})
+  output=$(leo execute -b --private-key "${PRIVATE_KEY}" --endpoint "${ENDPOINT}" \
+   -p ${program} --network "${NETWORK}" update_toggle_settings ${setting})
 else
-  output=$(snarkos developer execute --private-key "${PRIVATE_KEY}" --query "${ENDPOINT}" \
-   --broadcast "${ENDPOINT}/testnet3/transaction/broadcast" \
-   --record "${FEE_RECORD}" \
-   ${program} update_toggle_settings ${setting})
+  output=$(leo execute -b --private-key "${PRIVATE_KEY}" --endpoint "${ENDPOINT}" \
+   --record "${FEE_RECORD}" -p ${program} --network "${NETWORK}" update_toggle_settings ${setting})
 fi
 
 echo "${output}"

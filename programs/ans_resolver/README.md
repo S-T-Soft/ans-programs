@@ -1,4 +1,4 @@
-# get_address.aleo
+# ans_resolver.aleo
 
 ## Build Guide
 
