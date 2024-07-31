@@ -43,10 +43,10 @@ echo -e "Register \033[32m${name}.ans\033[0m from \033[32m${program}\033[0m in \
 
 if [[ -z "${FEE_RECORD}" ]]; then
   output=$(leo execute -b --private-key "${PRIVATE_KEY}" --endpoint "${ENDPOINT}" \
-           -p ${program} --network "${NETWORK}" register_fld "${name_arr}" "${parent}" "${ADDRESS}" "${RECORD}")
+           -p "${program%.aleo}" --network "${NETWORK}" register_fld "${name_arr}" "${parent}" "${ADDRESS}" "${RECORD}")
 else
   output=$(leo execute -b --private-key "${PRIVATE_KEY}" --endpoint "${ENDPOINT}" --record "${FEE_RECORD}" \
-           -p ${program} --network "${NETWORK}" register_fld "${name_arr}" "${parent}" "${ADDRESS}" "${RECORD}")
+           -p "${program%.aleo}" --network "${NETWORK}" register_fld "${name_arr}" "${parent}" "${ADDRESS}" "${RECORD}")
 fi
 
 echo "${output}"

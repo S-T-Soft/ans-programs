@@ -1,18 +1,22 @@
+import ans_utils.aleo;
 import aleo_name_service_registry_v1.aleo;
 import ans_coupon_card_v1.aleo;
 import credits.aleo;
 program ans_registrar_v1.aleo;
 
-struct BaseURI:
-    data0 as u128;
-    data1 as u128;
-    data2 as u128;
-    data3 as u128;
+struct Name:
+    name as [u128; 4u32];
+    parent as field;
 
 struct NameStruct:
     name as [u128; 4u32];
     parent as field;
     resolver as u128;
+
+struct data:
+    metadata as [field; 4u32];
+    content as Name;
+
 
 
 
@@ -236,16 +240,17 @@ finalize register_fld_with_coupon_public:
 
 
 
-function claim:
-    input r0 as u64.private;
+function stake:
+    input r0 as address.private;
     input r1 as address.private;
-    hash.bhp256 self.caller into r2 as u128;
-    call credits.aleo/transfer_public_to_private r1 r0 into r3 r4;
-    async claim r4 r2 into r5;
-    output r5 as ans_registrar_v1.aleo/claim.future;
+    input r2 as u64.private;
+    hash.bhp256 self.caller into r3 as u128;
+    call credits.aleo/bond_public r0 r1 r2 into r4;
+    async stake r4 r3 into r5;
+    output r5 as ans_registrar_v1.aleo/stake.future;
 
-finalize claim:
-    input r0 as credits.aleo/transfer_public_to_private.future;
+finalize stake:
+    input r0 as credits.aleo/bond_public.future;
     input r1 as u128.public;
     await r0;
     get general_settings[0u8] into r2;

@@ -78,7 +78,7 @@ program ans_coupon_card_v1.aleo {
     ) -> (CouponCard, Future) {
         let card: CouponCard = CouponCard {
             owner: receiver,
-            discount_percent: 0u8,
+            discount_percent: 25u8,
             limit_name_length: 5u8,
             // .anon
             tld: 3429962289057708737616101644642461578953781498069508461288569895276398934019field

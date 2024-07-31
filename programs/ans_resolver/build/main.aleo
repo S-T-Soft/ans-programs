@@ -1,16 +1,20 @@
+import ans_utils.aleo;
 import aleo_name_service_registry_v1.aleo;
 program ans_resolver_v1.aleo;
 
-struct BaseURI:
-    data0 as u128;
-    data1 as u128;
-    data2 as u128;
-    data3 as u128;
+struct Name:
+    name as [u128; 4u32];
+    parent as field;
 
 struct NameStruct:
     name as [u128; 4u32];
     parent as field;
     resolver as u128;
+
+struct data:
+    metadata as [field; 4u32];
+    content as Name;
+
 
 
 struct ResolverIndex:

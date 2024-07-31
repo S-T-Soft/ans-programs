@@ -55,7 +55,7 @@ program ans_credit_transfer_v1.aleo {
     ) -> Future {
         let (r, f): (credits.aleo/credits, Future) = credits.aleo/transfer_public_to_private(self.caller, amount);
         let salt: scalar = Poseidon2::hash_to_scalar(secret);
-        let name_secret_hash: field = BHP256::commit_to_field(nft.data, salt);
+        let name_secret_hash: field = BHP256::commit_to_field(nft.data.metadata[0u8], salt);
         return finalize_claim_credits_private(f, name_secret_hash, amount);
     }
 

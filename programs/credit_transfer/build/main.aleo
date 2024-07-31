@@ -1,18 +1,22 @@
 import credits.aleo;
+import ans_utils.aleo;
 import aleo_name_service_registry_v1.aleo;
 program ans_credit_transfer_v1.aleo;
 
 
-struct BaseURI:
-    data0 as u128;
-    data1 as u128;
-    data2 as u128;
-    data3 as u128;
+struct Name:
+    name as [u128; 4u32];
+    parent as field;
 
 struct NameStruct:
     name as [u128; 4u32];
     parent as field;
     resolver as u128;
+
+struct data:
+    metadata as [field; 4u32];
+    content as Name;
+
 
 
 
@@ -72,7 +76,7 @@ function claim_credits_private:
     input r2 as u64.private;
     call credits.aleo/transfer_public_to_private self.caller r2 into r3 r4;
     hash.psd2 r1 into r5 as scalar;
-    commit.bhp256 r0.data r5 into r6 as field;
+    commit.bhp256 r0.data.metadata[0u32] r5 into r6 as field;
     async claim_credits_private r4 r6 r2 into r7;
     output r7 as ans_credit_transfer_v1.aleo/claim_credits_private.future;
 

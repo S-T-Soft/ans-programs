@@ -209,13 +209,13 @@ program ans_registrar_v1.aleo {
         assert_eq(general_settings.get(2u8), 1u128);
     }
 
-    async transition claim(amount: u64, receiver: address) -> Future {
+    async transition stake(validator: address, withdrawal: address, amount: u64) -> Future {
         let hash_caller: u128 = BHP256::hash_to_u128(self.caller);
-        let (r, f): (credits.aleo/credits, Future) = credits.aleo/transfer_public_to_private(receiver, amount);
-        return finalize_claim(f, hash_caller);
+        let f: Future = credits.aleo/bond_public(validator, withdrawal, amount);
+        return finalize_stake(f, hash_caller);
     }
 
-    async function finalize_claim(f: Future, hash_caller: u128) {
+    async function finalize_stake(f: Future, hash_caller: u128) {
         f.await();
         // check admin
         assert_eq(hash_caller, general_settings.get(0u8));

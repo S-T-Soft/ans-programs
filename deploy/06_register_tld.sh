@@ -40,10 +40,10 @@ echo -e "Set tld \033[32m.${tld}(${name_arr})\033[0m to \033[32m${registrar}\033
 
 if [[ -z "${FEE_RECORD}" ]]; then
   output=$(leo execute -b --private-key "${PRIVATE_KEY}" --endpoint "${ENDPOINT}" \
-           -p ${program} --network "${NETWORK}" register_tld "${registrar}" "${name_arr}")
+           -p "${program%.aleo}" --network "${NETWORK}" register_tld "${registrar}" "${name_arr}")
 else
   output=$(leo execute -b --private-key "${PRIVATE_KEY}" --endpoint "${ENDPOINT}" --record "${FEE_RECORD}" \
-           -p ${program} --network "${NETWORK}" register_tld "${registrar}" "${name_arr}")
+           -p "${program%.aleo}" --network "${NETWORK}" register_tld "${registrar}" "${name_arr}")
 fi
 
 echo "${output}"

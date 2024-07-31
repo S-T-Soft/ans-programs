@@ -36,10 +36,10 @@ echo -e "Set setting \033[32m${setting}\033[0m for \033[32m${program}\033[0m in 
 
 if [[ -z "${FEE_RECORD}" ]]; then
   output=$(leo execute -b --private-key "${PRIVATE_KEY}" --endpoint "${ENDPOINT}" \
-   -p ${program} --network "${NETWORK}" update_toggle_settings ${setting})
+   -p "${program%.aleo}" --network "${NETWORK}" update_toggle_settings ${setting})
 else
   output=$(leo execute -b --private-key "${PRIVATE_KEY}" --endpoint "${ENDPOINT}" \
-   --record "${FEE_RECORD}" -p ${program} --network "${NETWORK}" update_toggle_settings ${setting})
+   --record "${FEE_RECORD}" -p "${program%.aleo}" --network "${NETWORK}" update_toggle_settings ${setting})
 fi
 
 echo "${output}"

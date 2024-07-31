@@ -41,8 +41,9 @@ program=`jq -r '.program' ../programs/ansregistrar/program.json`
 
 echo -e "Register \033[32m${name}.ans\033[0m from \033[32m${program}\033[0m in \033[32m${env}\033[0m"
 
-output=$(leo execute -b --private-key "${PRIVATE_KEY}" --endpoint "${ENDPOINT}" \
-  -p ${program} --network "${NETWORK}" register_fld_public "${name_arr}" "${parent}" "${ADDRESS}")
+output=$(snarkos developer execute --private-key "${PRIVATE_KEY}" --query "${ENDPOINT}" --network 1 \
+  -b "${ENDPOINT}/testnet/transaction/broadcast" \
+  "${program}" register_fld_public "${name_arr}" "${parent}" "${ADDRESS}")
 
 echo "${output}"
 tx=$(echo ${output} | awk 'match($0, /[^0-9a-zA-Z](at[0-9a-zA-Z]+)[^0-9a-zA-Z]/) {print substr($0, RSTART + 1, RLENGTH - 2); exit}')

@@ -76,7 +76,7 @@ finalize issue_coupon_card:
 function issue_coupon_card_cb:
     input r0 as address.private;
     input r1 as [u128; 4u32].private;
-    cast r0 0u8 5u8 3429962289057708737616101644642461578953781498069508461288569895276398934019field into r2 as CouponCard.record;
+    cast r0 25u8 5u8 3429962289057708737616101644642461578953781498069508461288569895276398934019field into r2 as CouponCard.record;
     hash.bhp256 r0 into r3 as u128;
     hash.bhp256 r1 into r4 as u128;
     hash.bhp256 self.caller into r5 as u128;

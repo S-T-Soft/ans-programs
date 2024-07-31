@@ -35,10 +35,10 @@ echo -e "Initialize \033[32m${program}\033[0m in \033[32m${env}\033[0m"
 
 if [[ -z "${FEE_RECORD}" ]]; then
   output=$(leo execute -b --private-key "${PRIVATE_KEY}" --endpoint "${ENDPOINT}" \
-   -p ${program} --network "${NETWORK}" initialize)
+   -p "${program%.aleo}" --network "${NETWORK}" initialize)
 else
   output=$(leo execute -b --private-key "${PRIVATE_KEY}" --endpoint "${ENDPOINT}" --record "${FEE_RECORD}" \
-   -p ${program} --network "${NETWORK}" initialize)
+   -p "${program%.aleo}" --network "${NETWORK}" initialize)
 fi
 
 echo "${output}"

@@ -4,11 +4,7 @@ env="dev"
 # use max u128 as total
 total=340282366920938463463374607431768211455u128
 # ANS symbol
-symbol=5459521u128
-# base uri: https://api.aleonames.id/token/
-base_uri="{data0: 148070927714570416107472362983216411752u128, data1: 246277052701588008591160357696659822u128, data2: 0u128, data3: 0u128}"
-# base uri: https://testnet-api.aleonames.id/token/
-base_uri="{data0: 60419623520418866384139602471830189160u128, data1: 133468932882108420321626207034102345825u128, data2: 13350705778619439u128, data3: 0u128}"
+symbol="ANS"
 
 for arg in "$@"; do
   case $arg in
@@ -28,6 +24,17 @@ if [[ ! -f ${env}.env ]]; then
   exit 1
 fi
 
+# if env is testnet or dev, use testnet-api.aleonames.id
+# if env is mainnet, use api.aleonames.id
+if [[ $env == "mainnet" ]]; then
+  base_uri="https://api.aleonames.id/token/"
+else
+  base_uri="https://testnet-api.aleonames.id/token/"
+fi
+
+symbol=$(python3 -c "s = '${symbol}'; b = s.encode('utf-8') + b'\0' * (64 - len(s)); name = int.from_bytes(b, 'little'); print(f'{name}u128')")
+base_uri_arr=$(python3 -c "s = '$base_uri'; b = s.encode('utf-8') + b'\0' * (64 - len(s)); name = [int.from_bytes(b[i*16 : i*16+16], 'little') for i in range(4)]; print(f'[{name[0]}u128, {name[1]}u128, {name[2]}u128, {name[3]}u128]')")
+
 root=$(pwd)
 env_file="${root}/${env}.env"
 source $env_file
@@ -42,11 +49,11 @@ program=`jq -r '.program' program.json`
 echo -e "Initialize \033[32m${program}\033[0m in \033[32m${env}\033[0m"
 
 if [[ -z "${FEE_RECORD}" ]]; then
-  output=$(leo execute -b --private-key "${PRIVATE_KEY}" --endpoint "${ENDPOINT}" -p ${program} \
-   --network "${NETWORK}" initialize_collection ${total} ${symbol} "${base_uri}")
+  output=$(leo execute -b --private-key "${PRIVATE_KEY}" --endpoint "${ENDPOINT}" -p "${program%.aleo}" \
+   --network "${NETWORK}" initialize_collection ${total} "${symbol}" "${base_uri_arr}")
 else
   output=$(leo execute -b --private-key "${PRIVATE_KEY}" --endpoint "${ENDPOINT}" --record "${FEE_RECORD}" \
-   --network "${NETWORK}" -p ${program} initialize_collection ${total} ${symbol} "${base_uri}")
+   --network "${NETWORK}" -p "${program%.aleo}" initialize_collection ${total} "${symbol}" "${base_uri_arr}")
 fi
 
 echo "${output}"
