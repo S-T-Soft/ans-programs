@@ -29,7 +29,8 @@ fi
 
 source ${env}.env
 echo "NETWORK=${NETWORK}
-PRIVATE_KEY=${PRIVATE_KEY}" > ../programs/registry/.env
+PRIVATE_KEY=${PRIVATE_KEY}
+ENDPOINT=${ENDPOINT}" > .env
 
 program=`jq -r '.program' ../programs/registry/program.json`
 registrar=`jq -r '.program' ../programs/ansregistrar/program.json`
@@ -39,10 +40,10 @@ name_arr=$(python3 -c "s = '$tld'; b = s.encode('utf-8') + b'\0' * (64 - len(s))
 echo -e "Set tld \033[32m.${tld}(${name_arr})\033[0m to \033[32m${registrar}\033[0m in \033[32m${env}\033[0m"
 
 if [[ -z "${FEE_RECORD}" ]]; then
-  output=$(leo execute -b --private-key "${PRIVATE_KEY}" --endpoint "${ENDPOINT}" \
+  output=$(leo execute -b --private-key "${PRIVATE_KEY}" \
            -p "${program%.aleo}" --network "${NETWORK}" register_tld "${registrar}" "${name_arr}")
 else
-  output=$(leo execute -b --private-key "${PRIVATE_KEY}" --endpoint "${ENDPOINT}" --record "${FEE_RECORD}" \
+  output=$(leo execute -b --private-key "${PRIVATE_KEY}" --record "${FEE_RECORD}" \
            -p "${program%.aleo}" --network "${NETWORK}" register_tld "${registrar}" "${name_arr}")
 fi
 

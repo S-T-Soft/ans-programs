@@ -32,8 +32,8 @@ else
   base_uri="https://testnet-api.aleonames.id/token/"
 fi
 
-symbol=$(python3 -c "s = '${symbol}'; b = s.encode('utf-8') + b'\0' * (64 - len(s)); name = int.from_bytes(b, 'little'); print(f'{name}u128')")
-base_uri_arr=$(python3 -c "s = '$base_uri'; b = s.encode('utf-8') + b'\0' * (64 - len(s)); name = [int.from_bytes(b[i*16 : i*16+16], 'little') for i in range(4)]; print(f'[{name[0]}u128, {name[1]}u128, {name[2]}u128, {name[3]}u128]')")
+symbol=$(python3 -c "s = '${symbol}'; b = s.encode('utf-8')[::-1] + b'\0' * (64 - len(s)); name = int.from_bytes(b, 'little'); print(f'{name}u128')")
+base_uri_arr=$(python3 -c "s = '$base_uri'; b = s.encode('utf-8')[::-1] + b'\0' * (64 - len(s)); name = [int.from_bytes(b[i*16 : i*16+16], 'little') for i in range(4)]; print(f'[{name[0]}u128, {name[1]}u128, {name[2]}u128, {name[3]}u128]')")
 
 root=$(pwd)
 env_file="${root}/${env}.env"
@@ -42,17 +42,18 @@ source $env_file
 cd ../programs/registry || exit
 
 echo "NETWORK=${NETWORK}
-PRIVATE_KEY=${PRIVATE_KEY}" > .env
+PRIVATE_KEY=${PRIVATE_KEY}
+ENDPOINT=${ENDPOINT}" > .env
 
 program=`jq -r '.program' program.json`
 
 echo -e "Initialize \033[32m${program}\033[0m in \033[32m${env}\033[0m"
 
 if [[ -z "${FEE_RECORD}" ]]; then
-  output=$(leo execute -b --private-key "${PRIVATE_KEY}" --endpoint "${ENDPOINT}" -p "${program%.aleo}" \
+  output=$(leo execute -b --private-key "${PRIVATE_KEY}" -p "${program%.aleo}" \
    --network "${NETWORK}" initialize_collection ${total} "${symbol}" "${base_uri_arr}")
 else
-  output=$(leo execute -b --private-key "${PRIVATE_KEY}" --endpoint "${ENDPOINT}" --record "${FEE_RECORD}" \
+  output=$(leo execute -b --private-key "${PRIVATE_KEY}" --record "${FEE_RECORD}" \
    --network "${NETWORK}" -p "${program%.aleo}" initialize_collection ${total} "${symbol}" "${base_uri_arr}")
 fi
 

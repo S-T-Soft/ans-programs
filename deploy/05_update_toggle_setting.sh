@@ -28,17 +28,18 @@ source $env_file
 cd ../programs/registry || exit
 
 echo "NETWORK=${NETWORK}
-PRIVATE_KEY=${PRIVATE_KEY}" > .env
+PRIVATE_KEY=${PRIVATE_KEY}
+ENDPOINT=${ENDPOINT}" > .env
 
 program=`jq -r '.program' program.json`
 
 echo -e "Set setting \033[32m${setting}\033[0m for \033[32m${program}\033[0m in \033[32m${env}\033[0m"
 
 if [[ -z "${FEE_RECORD}" ]]; then
-  output=$(leo execute -b --private-key "${PRIVATE_KEY}" --endpoint "${ENDPOINT}" \
+  output=$(leo execute -b --private-key "${PRIVATE_KEY}" \
    -p "${program%.aleo}" --network "${NETWORK}" update_toggle_settings ${setting})
 else
-  output=$(leo execute -b --private-key "${PRIVATE_KEY}" --endpoint "${ENDPOINT}" \
+  output=$(leo execute -b --private-key "${PRIVATE_KEY}" \
    --record "${FEE_RECORD}" -p "${program%.aleo}" --network "${NETWORK}" update_toggle_settings ${setting})
 fi
 

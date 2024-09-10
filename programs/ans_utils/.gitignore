@@ -1,6 +1,5 @@
-*.env
+.env
 *.avm
 *.prover
 *.verifier
 outputs/
-.idea/

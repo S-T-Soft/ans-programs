@@ -1,6 +1,6 @@
 {
-  "program": "ans_credit_transfer_v1.aleo",
-  "version": "0.0.1",
+  "program": "ans_credit_transfer.aleo",
+  "version": "0.0.2",
   "description": "",
   "license": "MIT",
   "dependencies": [
@@ -10,7 +10,17 @@
       "network": "testnet"
     },
     {
-      "name": "aleo_name_service_registry_v1.aleo",
+      "name": "multi_token_support_programv1.aleo",
+      "location": "network",
+      "network": "testnet"
+    },
+    {
+      "name": "pondo_core_protocolv1.aleo",
+      "location": "network",
+      "network": "testnet"
+    },
+    {
+      "name": "aleo_name_service_registry.aleo",
       "location": "local",
       "path": "../registry"
     }

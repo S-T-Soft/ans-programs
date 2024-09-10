@@ -1,7 +1,7 @@
 // The 'register' program.
 import ans_utils.aleo;
 
-program aleo_name_service_registry_v1.aleo {
+program aleo_name_service_registry.aleo {
     // Structure holding the ASCII bits of a domain name. If the length of the bits is less than 512,
     // zeros are appended in the end. The bits are then split into four parts, with name[0] holding the
     // first 128 bits and name[3] holding the last 128 bits.
@@ -16,9 +16,9 @@ program aleo_name_service_registry_v1.aleo {
         resolver: u128 // the resolver program, 0 means default resolver program
     }
 
-    struct approval {
-        approver: address,  // the owner of the nft
-        spender: address,  // the operator of the nft
+    struct ANSAllowance {
+        account: address,  // the owner of the ANS
+        spender: address,  // the operator of the ANS
     }
 
     struct data {
@@ -35,7 +35,8 @@ program aleo_name_service_registry_v1.aleo {
     record NFTView {
         owner: address,
         data: data,
-        edition: scalar
+        edition: scalar,
+        is_view: bool
     }
 
     // Mappings for different data structures
@@ -50,9 +51,9 @@ program aleo_name_service_registry_v1.aleo {
     mapping name_versions: field => u64;
 
     // nft_owner approved operators to transfer nft
-    mapping for_all_approvals: field => bool;
+    mapping for_all_allowances: field => bool;
     // nft_owner approved address to transfer nft
-    mapping nft_approvals: field => field;
+    mapping allowances: field => field;
 
     mapping general_settings: u8 => u128;
     mapping toggle_settings: u8 => u32;
@@ -197,6 +198,8 @@ program aleo_name_service_registry_v1.aleo {
     ) {
         // check admin
         assert_eq(hash_caller, general_settings.get(7u8));
+        // Check if the name has already been registered
+        assert_eq(names.contains(name_hash), false);
         names.set(name_hash, name_struct);
         nft_owners.set(name_hash, registrar);
     }
@@ -393,6 +396,7 @@ program aleo_name_service_registry_v1.aleo {
             owner: receiver,
             data: nft_data,
             edition: nft_edition,
+            is_view: true,
         };
         let transfer_public_future: Future = finalize_transfer_public(
              receiver, name_hash, self.caller
@@ -414,7 +418,7 @@ program aleo_name_service_registry_v1.aleo {
         assert_eq(caller, owner);
 
         nft_owners.set(name_hash, receiver);
-        nft_approvals.remove(name_hash);
+        allowances.remove(name_hash);
         // increase the version of the name, so all resolvers will be expired
         let version: u64 = name_versions.get_or_use(name_hash, 1u64);
         name_versions.set(name_hash, version + 1u64);
@@ -435,6 +439,7 @@ program aleo_name_service_registry_v1.aleo {
             owner: receiver,
             data: nft.data,
             edition: nft.edition,
+            is_view: true,
         };
         let transfer_private_to_public_future: Future =
             finalize_transfer_private_to_public(
@@ -477,7 +482,7 @@ program aleo_name_service_registry_v1.aleo {
         let owner: address = nft_owners.get(name_hash);
         assert_eq(caller, owner);
         nft_owners.remove(name_hash);
-        nft_approvals.remove(name_hash);
+        allowances.remove(name_hash);
         // increase the version of the name, so all resolvers will be expired
         let version: u64 = name_versions.get_or_use(name_hash, 1u64);
         name_versions.set(name_hash, version + 1u64);
@@ -572,8 +577,8 @@ program aleo_name_service_registry_v1.aleo {
         let name_hash: field = nft_data.metadata[0u8];
         assert_eq(name_hash, calc_name_hash(nft_data.content.name, nft_data.content.parent));
 
-        let apvl: approval = approval {
-            approver: self.caller,
+        let apvl: ANSAllowance = ANSAllowance {
+            account: self.caller,
             spender: spender,
         };
         let apvl_hash: field = BHP256::hash_to_field(apvl);
@@ -588,7 +593,7 @@ program aleo_name_service_registry_v1.aleo {
     ){
         let owner: address = nft_owners.get(name_hash);
         assert_eq(owner, caller);
-        nft_approvals.set(name_hash, apvl_hash);
+        allowances.set(name_hash, apvl_hash);
     }
 
     // Sets or unsets the approval of a given operator An operator is allowed to transfer all public names of the sender on their behalf.
@@ -596,8 +601,8 @@ program aleo_name_service_registry_v1.aleo {
         spender: address,
         approved: bool
     ) -> Future {
-        let apvl: approval = approval {
-            approver: self.caller,
+        let apvl: ANSAllowance = ANSAllowance {
+            account: self.caller,
             spender: spender,
         };
         let apvl_hash: field = BHP256::hash_to_field(apvl);
@@ -610,7 +615,7 @@ program aleo_name_service_registry_v1.aleo {
         apvl_hash: field,
         approved: bool,
     ){
-        for_all_approvals.set(apvl_hash, approved);
+        for_all_allowances.set(apvl_hash, approved);
     }
 
     async transition transfer_from_public(
@@ -626,10 +631,11 @@ program aleo_name_service_registry_v1.aleo {
             owner: to,
             data: nft_data,
             edition: nft_edition,
+            is_view: true,
         };
 
-        let apvl: approval = approval {
-            approver: from,
+        let apvl: ANSAllowance = ANSAllowance {
+            account: from,
             spender: self.caller,
         };
         let apvl_hash: field = BHP256::hash_to_field(apvl);
@@ -651,14 +657,14 @@ program aleo_name_service_registry_v1.aleo {
         name_hash: field,
     ) {
         assert(
-            nft_approvals.contains(name_hash)
-            || for_all_approvals.get_or_use(apvl_hash, false)
+            allowances.get_or_use(name_hash, 0field) == apvl_hash
+            || for_all_allowances.get_or_use(apvl_hash, false)
         );
 
         let owner: address = nft_owners.get(name_hash);
         assert_eq(from, owner);
 
-        nft_approvals.remove(name_hash);
+        allowances.remove(name_hash);
         nft_owners.set(name_hash, to);
 
         // increase the version of the name, so all resolvers will be expired

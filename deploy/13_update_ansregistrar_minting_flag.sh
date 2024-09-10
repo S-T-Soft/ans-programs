@@ -35,10 +35,10 @@ echo -e "Update \033[32m${program}\033[0m Minting Flag in \033[32m${env}\033[0m"
 
 if [[ -z "${FEE_RECORD}" ]]; then
   output=$(leo execute -b --private-key "${PRIVATE_KEY}" --endpoint "${ENDPOINT}" \
-   -p "${program%.aleo}" --network "${NETWORK}" set_minting_flag 1u128 1u128)
+   -p "${program%.aleo}" --network "${NETWORK}" update_setting 2u8 1u128)
 else
   output=$(leo execute -b --private-key "${PRIVATE_KEY}" --endpoint "${ENDPOINT}" --record "${FEE_RECORD}" \
-   -p "${program%.aleo}" --network "${NETWORK}" set_minting_flag 1u128 1u128)
+   -p "${program%.aleo}" --network "${NETWORK}" update_setting 2u8 1u128)
 fi
 
 echo "${output}"
