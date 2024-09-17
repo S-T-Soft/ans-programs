@@ -244,8 +244,9 @@ program ans_registrar_v4.aleo {
         f1.await();
         f2.await();
 
-        let min_stake_paleo: u64 = general_settings.get(MIN_STAKE_PALEO) as u64;
-        assert(paleo_amount >= min_stake_paleo);
+        let min_stake_paleo: u128 = general_settings.get(MIN_STAKE_PALEO);
+        let paleo_amount128: u128 = paleo_amount as u128;
+        assert(paleo_amount128 >= min_stake_paleo);
 
         let pondo_protocol_account: u64 = credits.aleo/account.get_or_use(pondo_core_protocolv1.aleo, 0u64);
         let pondo_reserved_for_withdrawal: u64 = pondo_core_protocolv1.aleo/balances.get(CLAIMABLE_WITHDRAWALS);
@@ -256,11 +257,11 @@ program ans_registrar_v4.aleo {
         let total_paleo_pool: u64 = multi_token_support_programv1.aleo/registered_tokens.get(PALEO_TOKEN_ID).supply as u64 + current_owed_commission - paleo_amount;
 
         let full_balance: u64 = currently_delegated + deposit_pool;
-        let paleo_for_deposit: u64 = (total_paleo_pool * credit_amount) / full_balance;
+        let paleo_for_deposit: u128 = (total_paleo_pool as u128 * credit_amount as u128) / full_balance as u128;
 
         // assert that the minted paleo is within stake gap pALEO of the expected amount
-        let stake_gap: u64 = general_settings.get(STAKE_GAP) as u64;
-        assert(paleo_for_deposit - paleo_amount < stake_gap);
+        let stake_gap: u128 = general_settings.get(STAKE_GAP);
+        assert(paleo_for_deposit - paleo_amount128 < stake_gap);
     }
 
     // ADMIN FUNCTIONS

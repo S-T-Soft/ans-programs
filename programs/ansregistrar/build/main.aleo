@@ -316,8 +316,8 @@ finalize stake:
     await r1;
     await r2;
     get general_settings[5u8] into r5;
-    cast r5 into r6 as u64;
-    gte r4 r6 into r7;
+    cast r4 into r6 as u128;
+    gte r6 r5 into r7;
     assert.eq r7 true;
     get.or_use credits.aleo/account[pondo_core_protocolv1.aleo] 0u64 into r8;
     get pondo_core_protocolv1.aleo/balances[2u8] into r9;
@@ -330,13 +330,15 @@ finalize stake:
     add r15 r13 into r16;
     sub r16 r4 into r17;
     add r12 r11 into r18;
-    mul r17 r3 into r19;
-    div r19 r18 into r20;
-    get general_settings[4u8] into r21;
-    cast r21 into r22 as u64;
-    sub r20 r4 into r23;
-    lt r23 r22 into r24;
-    assert.eq r24 true;
+    cast r17 into r19 as u128;
+    cast r3 into r20 as u128;
+    mul r19 r20 into r21;
+    cast r18 into r22 as u128;
+    div r21 r22 into r23;
+    get general_settings[4u8] into r24;
+    sub r23 r6 into r25;
+    lt r25 r24 into r26;
+    assert.eq r26 true;
 
 
 
