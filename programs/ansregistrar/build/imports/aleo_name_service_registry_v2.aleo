@@ -1,5 +1,5 @@
-import ans_utils.aleo;
-program aleo_name_service_registry.aleo;
+import ans_utils_v2.aleo;
+program aleo_name_service_registry_v2.aleo;
 
 struct Name:
     name as [u128; 4u32];
@@ -16,7 +16,6 @@ struct ANSAllowance:
 
 struct data:
     metadata as [field; 4u32];
-    content as Name;
 
 record NFT:
     owner as address.private;
@@ -76,7 +75,7 @@ function initialize_collection:
     input r2 as [u128; 4u32].public;
     hash.bhp256 self.caller into r3 as u128;
     async initialize_collection r0 r1 r3 r2 into r4;
-    output r4 as aleo_name_service_registry.aleo/initialize_collection.future;
+    output r4 as aleo_name_service_registry_v2.aleo/initialize_collection.future;
 
 finalize initialize_collection:
     input r0 as u128.public;
@@ -104,7 +103,7 @@ function set_admin:
     hash.bhp256 self.caller into r1 as u128;
     hash.bhp256 r0 into r2 as u128;
     async set_admin r1 r2 into r3;
-    output r3 as aleo_name_service_registry.aleo/set_admin.future;
+    output r3 as aleo_name_service_registry_v2.aleo/set_admin.future;
 
 finalize set_admin:
     input r0 as u128.public;
@@ -120,7 +119,7 @@ function update_base_uri:
     input r0 as [u128; 4u32].public;
     hash.bhp256 self.caller into r1 as u128;
     async update_base_uri r1 r0 into r2;
-    output r2 as aleo_name_service_registry.aleo/update_base_uri.future;
+    output r2 as aleo_name_service_registry_v2.aleo/update_base_uri.future;
 
 finalize update_base_uri:
     input r0 as u128.public;
@@ -142,7 +141,7 @@ function update_toggle_settings:
     input r0 as u32.public;
     hash.bhp256 self.caller into r1 as u128;
     async update_toggle_settings r1 r0 into r2;
-    output r2 as aleo_name_service_registry.aleo/update_toggle_settings.future;
+    output r2 as aleo_name_service_registry_v2.aleo/update_toggle_settings.future;
 
 finalize update_toggle_settings:
     input r0 as u128.public;
@@ -158,23 +157,34 @@ finalize update_toggle_settings:
 
 
 
+
+
+
+
+
+
 closure calc_name_hash:
     input r0 as [u128; 4u32];
     input r1 as field;
     cast r0 r1 into r2 as Name;
     hash.psd2 r2 into r3 as field;
+    cast  r3 0field 0field 0field into r4 as [field; 4u32];
+    cast r4 into r5 as data;
+    hash.bhp256 r5 into r6 as field;
+    commit.bhp256 r6 0scalar into r7 as field;
     output r3 as field;
+    output r7 as field;
 
 
 
 function register_tld:
     input r0 as address.private;
     input r1 as [u128; 4u32].private;
-    call calc_name_hash r1 0field into r2;
-    hash.bhp256 self.caller into r3 as u128;
-    cast r1 0field 0u128 into r4 as NameStruct;
-    async register_tld r3 r0 r2 r4 into r5;
-    output r5 as aleo_name_service_registry.aleo/register_tld.future;
+    call calc_name_hash r1 0field into r2 r3;
+    hash.bhp256 self.caller into r4 as u128;
+    cast r1 0field 0u128 into r5 as NameStruct;
+    async register_tld r4 r0 r3 r5 into r6;
+    output r6 as aleo_name_service_registry_v2.aleo/register_tld.future;
 
 finalize register_tld:
     input r0 as u128.public;
@@ -196,16 +206,15 @@ function register:
     input r1 as field.private;
     input r2 as address.private;
     input r3 as u128.private;
-    call ans_utils.aleo/validate_name r0 into r4;
+    call ans_utils_v2.aleo/validate_name r0 into r4;
     assert.eq r4 true;
-    call calc_name_hash r0 r1 into r5;
-    cast  r5 0field 0field 0field into r6 as [field; 4u32];
-    cast r0 r1 into r7 as Name;
-    cast r6 r7 into r8 as data;
+    call calc_name_hash r0 r1 into r5 r6;
+    cast  r5 0field 0field 0field into r7 as [field; 4u32];
+    cast r7 into r8 as data;
     cast r2 r8 0scalar into r9 as NFT.record;
-    async register r5 r0 r1 r3 self.caller into r10;
+    async register r6 r0 r1 r3 self.caller into r10;
     output r9 as NFT.record;
-    output r10 as aleo_name_service_registry.aleo/register.future;
+    output r10 as aleo_name_service_registry_v2.aleo/register.future;
 
 finalize register:
     input r0 as field.public;
@@ -231,18 +240,19 @@ function register_private:
     input r1 as NFT.record;
     input r2 as address.private;
     input r3 as u128.private;
-    call ans_utils.aleo/validate_name r0 into r4;
+    call ans_utils_v2.aleo/validate_name r0 into r4;
     assert.eq r4 true;
-    call calc_name_hash r0 r1.data.metadata[0u32] into r5;
-    cast  r5 0field 0field 0field into r6 as [field; 4u32];
-    cast r0 r1.data.metadata[0u32] into r7 as Name;
-    cast r6 r7 into r8 as data;
-    cast r2 r8 0scalar into r9 as NFT.record;
-    cast r1.owner r1.data r1.edition into r10 as NFT.record;
-    async register_private r5 r0 r1.data.metadata[0u32] r3 into r11;
-    output r9 as NFT.record;
-    output r10 as NFT.record;
-    output r11 as aleo_name_service_registry.aleo/register_private.future;
+    hash.bhp256 r1.data into r5 as field;
+    commit.bhp256 r5 0scalar into r6 as field;
+    call calc_name_hash r0 r6 into r7 r8;
+    cast  r7 0field 0field 0field into r9 as [field; 4u32];
+    cast r9 into r10 as data;
+    cast r2 r10 0scalar into r11 as NFT.record;
+    cast r1.owner r1.data r1.edition into r12 as NFT.record;
+    async register_private r8 r0 r6 r3 into r13;
+    output r11 as NFT.record;
+    output r12 as NFT.record;
+    output r13 as aleo_name_service_registry_v2.aleo/register_private.future;
 
 finalize register_private:
     input r0 as field.public;
@@ -265,16 +275,15 @@ function register_public:
     input r1 as field.private;
     input r2 as address.private;
     input r3 as u128.private;
-    call ans_utils.aleo/validate_name r0 into r4;
+    call ans_utils_v2.aleo/validate_name r0 into r4;
     assert.eq r4 true;
-    call calc_name_hash r0 r1 into r5;
-    cast  r5 0field 0field 0field into r6 as [field; 4u32];
-    cast r0 r1 into r7 as Name;
-    cast r6 r7 into r8 as data;
+    call calc_name_hash r0 r1 into r5 r6;
+    cast  r5 0field 0field 0field into r7 as [field; 4u32];
+    cast r7 into r8 as data;
     cast r2 r8 0scalar into r9 as NFT.record;
-    async register_public r5 r0 r1 r3 self.signer into r10;
+    async register_public r6 r0 r1 r3 self.signer into r10;
     output r9 as NFT.record;
-    output r10 as aleo_name_service_registry.aleo/register_public.future;
+    output r10 as aleo_name_service_registry_v2.aleo/register_public.future;
 
 finalize register_public:
     input r0 as field.public;
@@ -306,12 +315,12 @@ function transfer_public:
     input r0 as data.private;
     input r1 as scalar.private;
     input r2 as address.public;
-    call calc_name_hash r0.content.name r0.content.parent into r3;
-    assert.eq r0.metadata[0u32] r3;
-    cast r2 r0 r1 true into r4 as NFTView.record;
-    async transfer_public r2 r0.metadata[0u32] self.caller into r5;
-    output r4 as NFTView.record;
-    output r5 as aleo_name_service_registry.aleo/transfer_public.future;
+    hash.bhp256 r0 into r3 as field;
+    commit.bhp256 r3 0scalar into r4 as field;
+    cast r2 r0 0scalar true into r5 as NFTView.record;
+    async transfer_public r2 r4 self.caller into r6;
+    output r5 as NFTView.record;
+    output r6 as aleo_name_service_registry_v2.aleo/transfer_public.future;
 
 finalize transfer_public:
     input r0 as address.public;
@@ -340,10 +349,12 @@ finalize transfer_public:
 function transfer_private_to_public:
     input r0 as NFT.record;
     input r1 as address.private;
-    cast r1 r0.data r0.edition true into r2 as NFTView.record;
-    async transfer_private_to_public r1 r0.data.metadata[0u32] into r3;
-    output r2 as NFTView.record;
-    output r3 as aleo_name_service_registry.aleo/transfer_private_to_public.future;
+    hash.bhp256 r0.data into r2 as field;
+    commit.bhp256 r2 0scalar into r3 as field;
+    cast r1 r0.data 0scalar true into r4 as NFTView.record;
+    async transfer_private_to_public r1 r3 into r5;
+    output r4 as NFTView.record;
+    output r5 as aleo_name_service_registry_v2.aleo/transfer_private_to_public.future;
 
 finalize transfer_private_to_public:
     input r0 as address.public;
@@ -357,12 +368,12 @@ function transfer_public_to_private:
     input r0 as data.private;
     input r1 as scalar.private;
     input r2 as address.private;
-    call calc_name_hash r0.content.name r0.content.parent into r3;
-    assert.eq r0.metadata[0u32] r3;
-    cast r2 r0 0scalar into r4 as NFT.record;
-    async transfer_public_to_private self.caller r0.metadata[0u32] into r5;
-    output r4 as NFT.record;
-    output r5 as aleo_name_service_registry.aleo/transfer_public_to_private.future;
+    hash.bhp256 r0 into r3 as field;
+    commit.bhp256 r3 0scalar into r4 as field;
+    cast r2 r0 0scalar into r5 as NFT.record;
+    async transfer_public_to_private self.caller r4 into r6;
+    output r5 as NFT.record;
+    output r6 as aleo_name_service_registry_v2.aleo/transfer_public_to_private.future;
 
 finalize transfer_public_to_private:
     input r0 as address.public;
@@ -388,7 +399,7 @@ finalize transfer_public_to_private:
 function set_primary_name:
     input r0 as field.private;
     async set_primary_name r0 self.caller into r1;
-    output r1 as aleo_name_service_registry.aleo/set_primary_name.future;
+    output r1 as aleo_name_service_registry_v2.aleo/set_primary_name.future;
 
 finalize set_primary_name:
     input r0 as field.public;
@@ -402,7 +413,7 @@ finalize set_primary_name:
 
 function unset_primary_name:
     async unset_primary_name self.caller into r0;
-    output r0 as aleo_name_service_registry.aleo/unset_primary_name.future;
+    output r0 as aleo_name_service_registry_v2.aleo/unset_primary_name.future;
 
 finalize unset_primary_name:
     input r0 as address.public;
@@ -415,7 +426,7 @@ function set_resolver:
     input r0 as field.private;
     input r1 as u128.private;
     async set_resolver r0 self.caller r1 into r2;
-    output r2 as aleo_name_service_registry.aleo/set_resolver.future;
+    output r2 as aleo_name_service_registry_v2.aleo/set_resolver.future;
 
 finalize set_resolver:
     input r0 as field.public;
@@ -433,7 +444,7 @@ finalize set_resolver:
 function authorize:
     input r0 as NFT.record;
     async authorize into r1;
-    output r1 as aleo_name_service_registry.aleo/authorize.future;
+    output r1 as aleo_name_service_registry_v2.aleo/authorize.future;
 
 finalize authorize:
     assert.eq 0u8 1u8;
@@ -444,11 +455,24 @@ finalize authorize:
 function burn:
     input r0 as NFT.record;
     async burn r0.data.metadata[0u32] into r1;
-    output r1 as aleo_name_service_registry.aleo/burn.future;
+    output r1 as aleo_name_service_registry_v2.aleo/burn.future;
 
 finalize burn:
     input r0 as field.public;
+    get nft_owners[r0] into r1;
+    remove nft_owners[r0];
+    remove allowances[r0];
     remove names[r0];
+    get.or_use name_versions[r0] 1u64 into r2;
+    add r2 1u64 into r3;
+    set r3 into name_versions[r0];
+    get.or_use primary_names[r1] 0field into r4;
+    is.eq r4 r0 into r5;
+    branch.eq r5 false to end_then_0_4;
+    remove primary_names[r1];
+    branch.eq true true to end_otherwise_0_5;
+    position end_then_0_4;
+    position end_otherwise_0_5;
 
 
 
@@ -457,12 +481,12 @@ function approve_public:
     input r0 as address.private;
     input r1 as data.private;
     input r2 as scalar.private;
-    call calc_name_hash r1.content.name r1.content.parent into r3;
-    assert.eq r1.metadata[0u32] r3;
-    cast self.caller r0 into r4 as ANSAllowance;
-    hash.bhp256 r4 into r5 as field;
-    async approve_public self.caller r5 r1.metadata[0u32] into r6;
-    output r6 as aleo_name_service_registry.aleo/approve_public.future;
+    hash.bhp256 r1 into r3 as field;
+    commit.bhp256 r3 0scalar into r4 as field;
+    cast self.caller r0 into r5 as ANSAllowance;
+    hash.bhp256 r5 into r6 as field;
+    async approve_public self.caller r6 r4 into r7;
+    output r7 as aleo_name_service_registry_v2.aleo/approve_public.future;
 
 finalize approve_public:
     input r0 as address.public;
@@ -481,7 +505,7 @@ function set_for_all_approval:
     cast self.caller r0 into r2 as ANSAllowance;
     hash.bhp256 r2 into r3 as field;
     async set_for_all_approval r3 r1 into r4;
-    output r4 as aleo_name_service_registry.aleo/set_for_all_approval.future;
+    output r4 as aleo_name_service_registry_v2.aleo/set_for_all_approval.future;
 
 finalize set_for_all_approval:
     input r0 as field.public;
@@ -496,14 +520,14 @@ function transfer_from_public:
     input r1 as address.public;
     input r2 as data.private;
     input r3 as scalar.private;
-    call calc_name_hash r2.content.name r2.content.parent into r4;
-    assert.eq r2.metadata[0u32] r4;
-    cast r1 r2 r3 true into r5 as NFTView.record;
-    cast r0 self.caller into r6 as ANSAllowance;
-    hash.bhp256 r6 into r7 as field;
-    async transfer_from_public r7 r0 r1 r2.metadata[0u32] into r8;
-    output r5 as NFTView.record;
-    output r8 as aleo_name_service_registry.aleo/transfer_from_public.future;
+    hash.bhp256 r2 into r4 as field;
+    commit.bhp256 r4 0scalar into r5 as field;
+    cast r1 r2 0scalar true into r6 as NFTView.record;
+    cast r0 self.caller into r7 as ANSAllowance;
+    hash.bhp256 r7 into r8 as field;
+    async transfer_from_public r8 r0 r1 r5 into r9;
+    output r6 as NFTView.record;
+    output r9 as aleo_name_service_registry_v2.aleo/transfer_from_public.future;
 
 finalize transfer_from_public:
     input r0 as field.public;
@@ -524,9 +548,9 @@ finalize transfer_from_public:
     set r10 into name_versions[r3];
     get.or_use primary_names[r8] 0field into r11;
     is.eq r11 r3 into r12;
-    branch.eq r12 false to end_then_0_4;
+    branch.eq r12 false to end_then_0_6;
     remove primary_names[r8];
-    branch.eq true true to end_otherwise_0_5;
-    position end_then_0_4;
-    position end_otherwise_0_5;
+    branch.eq true true to end_otherwise_0_7;
+    position end_then_0_6;
+    position end_otherwise_0_7;
 

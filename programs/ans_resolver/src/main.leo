@@ -1,7 +1,7 @@
 // The 'ans_resolver' program.
-import aleo_name_service_registry.aleo;
+import aleo_name_service_registry_v2.aleo;
 
-program ans_resolver.aleo {
+program ans_resolver_v2.aleo {
     // Structure holding a name_hash and its type
     struct ResolverIndex {
         name: field, // The name_hash
@@ -32,8 +32,8 @@ program ans_resolver.aleo {
         category: u128,
         content: [u128; 8]
     ) {
-        assert_eq(owner, aleo_name_service_registry.aleo/nft_owners.get(name_hash));
-        let version: u64 = aleo_name_service_registry.aleo/name_versions.get_or_use(name_hash, 1u64);
+        assert_eq(owner, aleo_name_service_registry_v2.aleo/nft_owners.get(name_hash));
+        let version: u64 = aleo_name_service_registry_v2.aleo/name_versions.get_or_use(name_hash, 1u64);
         let resolver_index: ResolverIndex = ResolverIndex {
             name: name_hash,
             category: category,
@@ -55,8 +55,8 @@ program ans_resolver.aleo {
         owner: address,
         category: u128
     ) {
-        assert_eq(owner, aleo_name_service_registry.aleo/nft_owners.get(name_hash));
-        let version: u64 = aleo_name_service_registry.aleo/name_versions.get_or_use(name_hash, 1u64);
+        assert_eq(owner, aleo_name_service_registry_v2.aleo/nft_owners.get(name_hash));
+        let version: u64 = aleo_name_service_registry_v2.aleo/name_versions.get_or_use(name_hash, 1u64);
         let resolver_index: ResolverIndex = ResolverIndex {
             name: name_hash,
             category: category,

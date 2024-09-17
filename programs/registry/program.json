@@ -1,11 +1,11 @@
 {
-    "program": "aleo_name_service_registry.aleo",
+    "program": "aleo_name_service_registry_v2.aleo",
     "version": "0.0.1",
     "description": "",
     "license": "MIT",
     "dependencies": [
         {
-          "name": "ans_utils.aleo",
+          "name": "ans_utils_v2.aleo",
           "location": "local",
           "path": "../ans_utils"
         }

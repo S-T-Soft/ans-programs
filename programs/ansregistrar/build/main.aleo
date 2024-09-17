@@ -1,5 +1,5 @@
-import ans_utils.aleo;
-import aleo_name_service_registry.aleo;
+import ans_utils_v2.aleo;
+import aleo_name_service_registry_v2.aleo;
 import ans_coupon_card_v2.aleo;
 import credits.aleo;
 import multi_token_support_programv1.aleo;
@@ -13,11 +13,7 @@ import pondo_delegator3v1.aleo;
 import pondo_delegator4v1.aleo;
 import pondo_delegator5v1.aleo;
 import pondo_core_protocolv1.aleo;
-program ans_registrar_v3.aleo;
-
-struct Name:
-    name as [u128; 4u32];
-    parent as field;
+program ans_registrar_v4.aleo;
 
 struct NameStruct:
     name as [u128; 4u32];
@@ -26,7 +22,6 @@ struct NameStruct:
 
 struct data:
     metadata as [field; 4u32];
-    content as Name;
 
 
 
@@ -67,14 +62,14 @@ function transfer_public:
     input r0 as data.private;
     input r1 as scalar.private;
     input r2 as address.private;
-    call aleo_name_service_registry.aleo/transfer_public r0 r1 r2 into r3 r4;
+    call aleo_name_service_registry_v2.aleo/transfer_public r0 r1 r2 into r3 r4;
     hash.bhp256 self.caller into r5 as u128;
     async transfer_public r5 r4 into r6;
-    output r6 as ans_registrar_v3.aleo/transfer_public.future;
+    output r6 as ans_registrar_v4.aleo/transfer_public.future;
 
 finalize transfer_public:
     input r0 as u128.public;
-    input r1 as aleo_name_service_registry.aleo/transfer_public.future;
+    input r1 as aleo_name_service_registry_v2.aleo/transfer_public.future;
     await r1;
     get general_settings[0u8] into r2;
     assert.eq r0 r2;
@@ -85,7 +80,7 @@ finalize transfer_public:
 function initialize_registrar:
     hash.bhp256 self.caller into r0 as u128;
     async initialize_registrar r0 into r1;
-    output r1 as ans_registrar_v3.aleo/initialize_registrar.future;
+    output r1 as ans_registrar_v4.aleo/initialize_registrar.future;
 
 finalize initialize_registrar:
     input r0 as u128.public;
@@ -106,7 +101,7 @@ function update_setting:
     input r1 as u128.private;
     hash.bhp256 self.caller into r2 as u128;
     async update_setting r2 r0 r1 into r3;
-    output r3 as ans_registrar_v3.aleo/update_setting.future;
+    output r3 as ans_registrar_v4.aleo/update_setting.future;
 
 finalize update_setting:
     input r0 as u128.public;
@@ -124,7 +119,7 @@ function change_admin:
     hash.bhp256 self.caller into r1 as u128;
     hash.bhp256 r0 into r2 as u128;
     async change_admin r1 r2 into r3;
-    output r3 as ans_registrar_v3.aleo/change_admin.future;
+    output r3 as ans_registrar_v4.aleo/change_admin.future;
 
 finalize change_admin:
     input r0 as u128.public;
@@ -162,13 +157,13 @@ function register_free:
     call get_name_length r0 into r7;
     gte r7 r3.limit_name_length into r8;
     assert.eq r8 true;
-    call aleo_name_service_registry.aleo/register r0 r1 r2 0u128 into r9 r10;
+    call aleo_name_service_registry_v2.aleo/register r0 r1 r2 0u128 into r9 r10;
     call ans_coupon_card_v2.aleo/use r3;
     async register_free r10 into r11;
-    output r11 as ans_registrar_v3.aleo/register_free.future;
+    output r11 as ans_registrar_v4.aleo/register_free.future;
 
 finalize register_free:
-    input r0 as aleo_name_service_registry.aleo/register.future;
+    input r0 as aleo_name_service_registry_v2.aleo/register.future;
     await r0;
     get general_settings[3u8] into r1;
     assert.eq r1 1u128;
@@ -196,14 +191,14 @@ function register_fld:
     input r3 as credits.aleo/credits.record;
     call get_name_length r0 into r4;
     call calc_price r4 into r5;
-    call credits.aleo/transfer_private_to_public r3 ans_registrar_v3.aleo r5 into r6 r7;
-    call aleo_name_service_registry.aleo/register r0 r1 r2 0u128 into r8 r9;
+    call credits.aleo/transfer_private_to_public r3 ans_registrar_v4.aleo r5 into r6 r7;
+    call aleo_name_service_registry_v2.aleo/register r0 r1 r2 0u128 into r8 r9;
     async register_fld r7 r9 into r10;
-    output r10 as ans_registrar_v3.aleo/register_fld.future;
+    output r10 as ans_registrar_v4.aleo/register_fld.future;
 
 finalize register_fld:
     input r0 as credits.aleo/transfer_private_to_public.future;
-    input r1 as aleo_name_service_registry.aleo/register.future;
+    input r1 as aleo_name_service_registry_v2.aleo/register.future;
     await r0;
     await r1;
     get general_settings[2u8] into r2;
@@ -218,14 +213,14 @@ function register_fld_public:
     input r2 as address.private;
     call get_name_length r0 into r3;
     call calc_price r3 into r4;
-    call credits.aleo/transfer_public_as_signer ans_registrar_v3.aleo r4 into r5;
-    call aleo_name_service_registry.aleo/register r0 r1 r2 0u128 into r6 r7;
+    call credits.aleo/transfer_public_as_signer ans_registrar_v4.aleo r4 into r5;
+    call aleo_name_service_registry_v2.aleo/register r0 r1 r2 0u128 into r6 r7;
     async register_fld_public r5 r7 into r8;
-    output r8 as ans_registrar_v3.aleo/register_fld_public.future;
+    output r8 as ans_registrar_v4.aleo/register_fld_public.future;
 
 finalize register_fld_public:
     input r0 as credits.aleo/transfer_public_as_signer.future;
-    input r1 as aleo_name_service_registry.aleo/register.future;
+    input r1 as aleo_name_service_registry_v2.aleo/register.future;
     await r0;
     await r1;
     get general_settings[2u8] into r2;
@@ -251,15 +246,15 @@ function register_fld_with_coupon:
     cast r4.discount_percent into r11 as u64;
     mul r10 r11 into r12;
     div r12 100u64 into r13;
-    call credits.aleo/transfer_private_to_public r3 ans_registrar_v3.aleo r13 into r14 r15;
-    call aleo_name_service_registry.aleo/register r0 r1 r2 0u128 into r16 r17;
+    call credits.aleo/transfer_private_to_public r3 ans_registrar_v4.aleo r13 into r14 r15;
+    call aleo_name_service_registry_v2.aleo/register r0 r1 r2 0u128 into r16 r17;
     call ans_coupon_card_v2.aleo/use r4;
     async register_fld_with_coupon r15 r17 into r18;
-    output r18 as ans_registrar_v3.aleo/register_fld_with_coupon.future;
+    output r18 as ans_registrar_v4.aleo/register_fld_with_coupon.future;
 
 finalize register_fld_with_coupon:
     input r0 as credits.aleo/transfer_private_to_public.future;
-    input r1 as aleo_name_service_registry.aleo/register.future;
+    input r1 as aleo_name_service_registry_v2.aleo/register.future;
     await r0;
     await r1;
     get general_settings[3u8] into r2;
@@ -284,15 +279,15 @@ function register_fld_with_coupon_public:
     cast r3.discount_percent into r10 as u64;
     mul r9 r10 into r11;
     div r11 100u64 into r12;
-    call credits.aleo/transfer_public_as_signer ans_registrar_v3.aleo r12 into r13;
-    call aleo_name_service_registry.aleo/register r0 r1 r2 0u128 into r14 r15;
+    call credits.aleo/transfer_public_as_signer ans_registrar_v4.aleo r12 into r13;
+    call aleo_name_service_registry_v2.aleo/register r0 r1 r2 0u128 into r14 r15;
     call ans_coupon_card_v2.aleo/use r3;
     async register_fld_with_coupon_public r13 r15 into r16;
-    output r16 as ans_registrar_v3.aleo/register_fld_with_coupon_public.future;
+    output r16 as ans_registrar_v4.aleo/register_fld_with_coupon_public.future;
 
 finalize register_fld_with_coupon_public:
     input r0 as credits.aleo/transfer_public_as_signer.future;
-    input r1 as aleo_name_service_registry.aleo/register.future;
+    input r1 as aleo_name_service_registry_v2.aleo/register.future;
     await r0;
     await r1;
     get general_settings[3u8] into r2;
@@ -305,11 +300,11 @@ function stake:
     input r0 as u64.private;
     input r1 as u64.private;
     call credits.aleo/transfer_public self.signer r0 into r2;
-    call pondo_core_protocolv1.aleo/deposit_public_as_signer r0 r1 ans_registrar_v3.aleo into r3;
+    call pondo_core_protocolv1.aleo/deposit_public_as_signer r0 r1 ans_registrar_v4.aleo into r3;
     cast r1 into r4 as u128;
-    call multi_token_support_programv1.aleo/transfer_public_as_signer 1751493913335802797273486270793650302076377624243810059080883537084141842600field ans_registrar_v3.aleo r4 into r5;
+    call multi_token_support_programv1.aleo/transfer_public_as_signer 1751493913335802797273486270793650302076377624243810059080883537084141842600field ans_registrar_v4.aleo r4 into r5;
     async stake r2 r3 r5 r0 r1 into r6;
-    output r6 as ans_registrar_v3.aleo/stake.future;
+    output r6 as ans_registrar_v4.aleo/stake.future;
 
 finalize stake:
     input r0 as credits.aleo/transfer_public.future;
@@ -353,7 +348,7 @@ function withdraw:
     cast r1 into r3 as u128;
     call multi_token_support_programv1.aleo/transfer_public 1751493913335802797273486270793650302076377624243810059080883537084141842600field r0 r3 into r4;
     async withdraw r4 r2 into r5;
-    output r5 as ans_registrar_v3.aleo/withdraw.future;
+    output r5 as ans_registrar_v4.aleo/withdraw.future;
 
 finalize withdraw:
     input r0 as multi_token_support_programv1.aleo/transfer_public.future;

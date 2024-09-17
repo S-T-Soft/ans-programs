@@ -1,11 +1,11 @@
 {
-    "program": "ans_resolver.aleo",
+    "program": "ans_resolver_v2.aleo",
     "version": "0.0.0",
     "description": "",
     "license": "MIT",
     "dependencies": [
         {
-          "name": "aleo_name_service_registry.aleo",
+          "name": "aleo_name_service_registry_v2.aleo",
           "location": "local",
           "path": "../registry"
         }

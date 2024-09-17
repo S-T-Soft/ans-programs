@@ -1,4 +1,4 @@
-# ans_registrar_v3.aleo
+# ans_registrar_v4.aleo
 
 ## Build Guide
 

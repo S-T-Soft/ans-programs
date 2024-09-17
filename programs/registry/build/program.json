@@ -1,5 +1,5 @@
 {
-    "program": "aleo_name_service_registry.aleo",
+    "program": "aleo_name_service_registry_v2.aleo",
     "version": "0.0.0",
     "description": "",
     "license": "MIT"

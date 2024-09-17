@@ -1,7 +1,7 @@
 // The 'register' program.
-import ans_utils.aleo;
+import ans_utils_v2.aleo;
 
-program aleo_name_service_registry.aleo {
+program aleo_name_service_registry_v2.aleo {
     // Structure holding the ASCII bits of a domain name. If the length of the bits is less than 512,
     // zeros are appended in the end. The bits are then split into four parts, with name[0] holding the
     // first 128 bits and name[3] holding the last 128 bits.
@@ -23,7 +23,6 @@ program aleo_name_service_registry.aleo {
 
     struct data {
         metadata: [field; 4], // the first element is the name_hash of the name
-        content: Name
     }
 
     record NFT {
@@ -58,12 +57,32 @@ program aleo_name_service_registry.aleo {
     mapping general_settings: u8 => u128;
     mapping toggle_settings: u8 => u32;
 
-    function calc_name_hash(name: [u128; 4], parent: field) -> field {
+    inline calc_name_field(name: [u128; 4], parent: field) -> field {
         let full_name: Name = Name {
             name: name,
             parent: parent
         };
         return Poseidon2::hash_to_field(full_name);
+    }
+
+    inline calc_name_hash_for_data(nft_data: data) -> field {
+        let data_hash: field = BHP256::hash_to_field(nft_data);
+        let name_hash: field = BHP256::commit_to_field(data_hash, 0scalar);
+        return name_hash;
+    }
+
+    inline calc_name_hash_for_field(name_field: field) -> field {
+        let nft_data: data = data {
+            metadata: [name_field, 0field, 0field, 0field],
+        };
+        return calc_name_hash_for_data(nft_data);
+    }
+
+    // Calculate the name hash, return the name field and the name hash
+    function calc_name_hash(name: [u128; 4], parent: field) -> (field, field) {
+        let name_field: field = calc_name_field(name, parent);
+        let name_hash: field = calc_name_hash_for_field(name_field);
+        return (name_field, name_hash);
     }
 
     async transition initialize_collection(
@@ -180,7 +199,7 @@ program aleo_name_service_registry.aleo {
         registrar: address,
         tld: [u128; 4]
     ) -> Future {
-        let name_hash: field = calc_name_hash(tld, 0field);
+        let (name_field, name_hash): (field, field) = calc_name_hash(tld, 0field);
         let hash_caller: u128 = BHP256::hash_to_u128(self.caller);
         let name_struct: NameStruct = NameStruct {
             name: tld,
@@ -213,14 +232,10 @@ program aleo_name_service_registry.aleo {
         resolver: u128
     ) -> (NFT, Future) {
         // Validate the name before registration
-        assert(ans_utils.aleo/validate_name(name));
-        let name_hash: field = calc_name_hash(name, parent);
+        assert(ans_utils_v2.aleo/validate_name(name));
+        let (name_field, name_hash): (field, field) = calc_name_hash(name, parent);
         let nft_data: data = data {
-            metadata: [name_hash, 0field, 0field, 0field],
-            content: Name {
-                name: name,
-                parent: parent
-            }
+            metadata: [name_field, 0field, 0field, 0field]
         };
         let nft: NFT = NFT {
             owner: receiver,
@@ -267,15 +282,11 @@ program aleo_name_service_registry.aleo {
         resolver: u128
     ) -> (NFT, NFT, Future) {
         // Validate the name before registration
-        assert(ans_utils.aleo/validate_name(name));
-        let parent_name_hash: field = parent.data.metadata[0u8];
-        let name_hash: field = calc_name_hash(name, parent_name_hash);
+        assert(ans_utils_v2.aleo/validate_name(name));
+        let parent_name_hash: field = calc_name_hash_for_data(parent.data);
+        let (name_field, name_hash): (field, field) = calc_name_hash(name, parent_name_hash);
         let nft_data: data = data {
-            metadata: [name_hash, 0field, 0field, 0field],
-            content: Name {
-                name: name,
-                parent: parent_name_hash
-            }
+            metadata: [name_field, 0field, 0field, 0field]
         };
         let nft: NFT = NFT {
             owner: receiver,
@@ -326,14 +337,10 @@ program aleo_name_service_registry.aleo {
         resolver: u128
     ) -> (NFT, Future) {
         // Validate the name before registration
-        assert(ans_utils.aleo/validate_name(name));
-        let name_hash: field = calc_name_hash(name, parent);
+        assert(ans_utils_v2.aleo/validate_name(name));
+        let (name_field, name_hash): (field, field) = calc_name_hash(name, parent);
         let nft_data: data = data {
-            metadata: [name_hash, 0field, 0field, 0field],
-            content: Name {
-                name: name,
-                parent: parent
-            }
+            metadata: [name_field, 0field, 0field, 0field]
         };
         let nft: NFT = NFT {
             owner: receiver,
@@ -390,12 +397,11 @@ program aleo_name_service_registry.aleo {
         private nft_edition: scalar,
         public receiver: address
     ) -> (NFTView, Future) {
-        let name_hash: field = nft_data.metadata[0u8];
-        assert_eq(name_hash, calc_name_hash(nft_data.content.name, nft_data.content.parent));
+        let name_hash: field = calc_name_hash_for_data(nft_data);
         let nft_view: NFTView = NFTView {
             owner: receiver,
             data: nft_data,
-            edition: nft_edition,
+            edition: 0scalar,
             is_view: true,
         };
         let transfer_public_future: Future = finalize_transfer_public(
@@ -433,12 +439,12 @@ program aleo_name_service_registry.aleo {
         nft: NFT,
         private receiver: address
     ) -> (NFTView, Future) {
-        let name_hash: field = nft.data.metadata[0u8];
+        let name_hash: field = calc_name_hash_for_data(nft.data);
 
         let nft_view: NFTView = NFTView {
             owner: receiver,
             data: nft.data,
-            edition: nft.edition,
+            edition: 0scalar,
             is_view: true,
         };
         let transfer_private_to_public_future: Future =
@@ -464,8 +470,7 @@ program aleo_name_service_registry.aleo {
         private nft_edition: scalar,
         private receiver: address,
     ) -> (NFT, Future) {
-        let name_hash: field = nft_data.metadata[0u8];
-        assert_eq(name_hash, calc_name_hash(nft_data.content.name, nft_data.content.parent));
+        let name_hash: field = calc_name_hash_for_data(nft_data);
         let nft: NFT = NFT {
             owner: receiver,
             data: nft_data,
@@ -563,7 +568,18 @@ program aleo_name_service_registry.aleo {
     }
 
     async function finalize_burn(name_hash: field) {
+        let owner: address = nft_owners.get(name_hash);
+        nft_owners.remove(name_hash);
+        allowances.remove(name_hash);
         names.remove(name_hash);
+        // increase the version of the name, so all resolvers will be expired
+        let version: u64 = name_versions.get_or_use(name_hash, 1u64);
+        name_versions.set(name_hash, version + 1u64);
+        // remove the primary name if the name is the primary name of the owner
+        let primary_name: field = primary_names.get_or_use(owner, 0field);
+        if (primary_name == name_hash) {
+            primary_names.remove(owner);
+        }
     }
 
     // Approves another address to transfer the given public name_hash The zero address indicates there is no approved address.
@@ -574,8 +590,7 @@ program aleo_name_service_registry.aleo {
         private nft_data: data,
         private nft_edition: scalar,
     ) -> Future {
-        let name_hash: field = nft_data.metadata[0u8];
-        assert_eq(name_hash, calc_name_hash(nft_data.content.name, nft_data.content.parent));
+        let name_hash: field = calc_name_hash_for_data(nft_data);
 
         let apvl: ANSAllowance = ANSAllowance {
             account: self.caller,
@@ -624,13 +639,12 @@ program aleo_name_service_registry.aleo {
         private nft_data: data,
         private nft_edition: scalar,
     ) -> (NFTView, Future) {
-        let name_hash: field = nft_data.metadata[0u8];
-        assert_eq(name_hash, calc_name_hash(nft_data.content.name, nft_data.content.parent));
+        let name_hash: field = calc_name_hash_for_data(nft_data);
 
         let nft_view: NFTView = NFTView {
             owner: to,
             data: nft_data,
-            edition: nft_edition,
+            edition: 0scalar,
             is_view: true,
         };
 

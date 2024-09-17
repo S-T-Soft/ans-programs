@@ -1,4 +1,4 @@
-# ans_resolver.aleo
+# ans_resolver_v2.aleo
 
 ## Build Guide
 
