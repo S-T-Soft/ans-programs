@@ -6,8 +6,8 @@ checksum = "00f4885f073789d0340bebfd0a055d319e11509c7242bf7bba73fd955e458e72"
 dependencies = []
 
 [[package]]
-name = "aleo_name_service_registry_v2.aleo"
+name = "aleo_name_service_registry_v3.aleo"
 location = "local"
 path = "/Users/snowtiger/PycharmProjects/ans-programs/programs/ans_resolver/../registry"
-checksum = "bc6944db3e010dfc6fac833c5e00fb0e82a5d780e2da9f23d0ae2661602a39e7"
+checksum = "d691d94dff98c246c9fab08a9eafdb83a275b57f7d599b128cef955357fada9e"
 dependencies = ["ans_utils_v2.aleo"]

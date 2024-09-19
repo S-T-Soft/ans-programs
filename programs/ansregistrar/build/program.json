@@ -1,6 +1,23 @@
 {
-    "program": "ans_registrar_v4.aleo",
-    "version": "0.0.0",
-    "description": "",
-    "license": "MIT"
+  "program": "ans_registrar_v5.aleo",
+  "version": "0.0.1",
+  "description": "",
+  "license": "MIT",
+  "dependencies": [
+    {
+      "name": "aleo_name_service_registry_v3.aleo",
+      "location": "local",
+      "path": "../registry"
+    },
+    {
+      "name": "ans_coupon_card_v2.aleo",
+      "location": "local",
+      "path": "../ans_coupon_card"
+    },
+    {
+      "name": "pondo_core_protocolv1.aleo",
+      "location": "network",
+      "network": "testnet"
+    }
+  ]
 }

@@ -1,9 +1,9 @@
 import credits.aleo;
 import ans_coupon_card_v2.aleo;
-import aleo_name_service_registry_v2.aleo;
+import aleo_name_service_registry_v3.aleo;
 import pondo_core_protocolv1.aleo;
 
-program ans_registrar_v4.aleo {
+program ans_registrar_v5.aleo {
     const ADMIN: u8 = 0u8;
     const INITIALIZED: u8 = 1u8;
     const MINTING_FLAG: u8 = 2u8;
@@ -112,7 +112,7 @@ program ans_registrar_v4.aleo {
         assert(card.tld == parent || card.tld == 0field);
         let length: u8 = get_name_length(name);
         assert(length >= card.limit_name_length);
-        let (n, f): (aleo_name_service_registry_v2.aleo/NFT, Future) = aleo_name_service_registry_v2.aleo/register(name, parent, receiver, 0u128);
+        let (n, f): (aleo_name_service_registry_v3.aleo/NFT, Future) = aleo_name_service_registry_v3.aleo/register(name, parent, receiver, 0u128);
         ans_coupon_card_v2.aleo/use(card);
         return finalize_register_free(f);
     }
@@ -135,7 +135,7 @@ program ans_registrar_v4.aleo {
         let price: u64 = calc_price(length);
         // this program address receive credits
         let (r, f): (credits.aleo/credits, Future) = credits.aleo/transfer_private_to_public(pay_record, self.address, price);
-        let (n, f2): (aleo_name_service_registry_v2.aleo/NFT, Future) = aleo_name_service_registry_v2.aleo/register(name, parent, receiver, 0u128);
+        let (n, f2): (aleo_name_service_registry_v3.aleo/NFT, Future) = aleo_name_service_registry_v3.aleo/register(name, parent, receiver, 0u128);
         return finalize_register_fld(f, f2);
     }
 
@@ -157,7 +157,7 @@ program ans_registrar_v4.aleo {
         let price: u64 = calc_price(length);
         // this program address receive credits
         let f: Future = credits.aleo/transfer_public_as_signer(self.address, price);
-        let (n, f2): (aleo_name_service_registry_v2.aleo/NFT, Future) = aleo_name_service_registry_v2.aleo/register(name, parent, receiver, 0u128);
+        let (n, f2): (aleo_name_service_registry_v3.aleo/NFT, Future) = aleo_name_service_registry_v3.aleo/register(name, parent, receiver, 0u128);
         return finalize_register_fld_public(f, f2);
     }
 
@@ -185,7 +185,7 @@ program ans_registrar_v4.aleo {
         price = price * card.discount_percent as u64 / 100u64;
         // this program address receive credits
         let (r, f): (credits.aleo/credits, Future) = credits.aleo/transfer_private_to_public(pay_record, self.address, price);
-        let (n, f2): (aleo_name_service_registry_v2.aleo/NFT, Future) = aleo_name_service_registry_v2.aleo/register(name, parent, receiver, 0u128);
+        let (n, f2): (aleo_name_service_registry_v3.aleo/NFT, Future) = aleo_name_service_registry_v3.aleo/register(name, parent, receiver, 0u128);
         ans_coupon_card_v2.aleo/use(card);
         return finalize_register_fld_with_coupon(f, f2);
     }
@@ -213,7 +213,7 @@ program ans_registrar_v4.aleo {
         price = price * card.discount_percent as u64 / 100u64;
         // this program address receive credits
         let f: Future = credits.aleo/transfer_public_as_signer(self.address, price);
-        let (n, f2): (aleo_name_service_registry_v2.aleo/NFT, Future) = aleo_name_service_registry_v2.aleo/register(name, parent, receiver, 0u128);
+        let (n, f2): (aleo_name_service_registry_v3.aleo/NFT, Future) = aleo_name_service_registry_v3.aleo/register(name, parent, receiver, 0u128);
         ans_coupon_card_v2.aleo/use(card);
         return finalize_register_fld_with_coupon_public(f, f2);
     }
@@ -270,7 +270,7 @@ program ans_registrar_v4.aleo {
         nft_edition: scalar,
         receiver: address
     ) -> Future {
-        let (nft, f): (aleo_name_service_registry_v2.aleo/NFTView, Future) = aleo_name_service_registry_v2.aleo/transfer_public(nft_data, nft_edition, receiver);
+        let (nft, f): (aleo_name_service_registry_v3.aleo/NFTView, Future) = aleo_name_service_registry_v3.aleo/transfer_public(nft_data, nft_edition, receiver);
         let hash_caller: u128 = BHP256::hash_to_u128(self.caller);
         return finalize_transfer_public(hash_caller, f);
     }

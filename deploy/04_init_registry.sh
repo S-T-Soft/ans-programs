@@ -32,8 +32,8 @@ else
   base_uri="https://testnet-api.aleonames.id/token/"
 fi
 
-symbol=$(python3 -c "s = '${symbol}'; b = s.encode('utf-8')[::-1] + b'\0' * (64 - len(s)); name = int.from_bytes(b, 'little'); print(f'{name}u128')")
-base_uri_arr=$(python3 -c "s = '$base_uri'; b = s.encode('utf-8')[::-1] + b'\0' * (64 - len(s)); name = [int.from_bytes(b[i*16 : i*16+16], 'little') for i in range(4)]; print(f'[{name[0]}u128, {name[1]}u128, {name[2]}u128, {name[3]}u128]')")
+symbol=$(node stringEncode.ts $symbol 1)
+base_uri_arr=$(node stringEncode.ts $base_uri 4)
 
 root=$(pwd)
 env_file="${root}/${env}.env"

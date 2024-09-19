@@ -1,4 +1,4 @@
-# aleo_name_service_registry_v2.aleo
+# aleo_name_service_registry_v3.aleo
 
 ## Build Guide
 

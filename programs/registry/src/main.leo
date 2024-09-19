@@ -1,7 +1,7 @@
 // The 'register' program.
 import ans_utils_v2.aleo;
 
-program aleo_name_service_registry_v2.aleo {
+program aleo_name_service_registry_v3.aleo {
     // Structure holding the ASCII bits of a domain name. If the length of the bits is less than 512,
     // zeros are appended in the end. The bits are then split into four parts, with name[0] holding the
     // first 128 bits and name[3] holding the last 128 bits.
@@ -54,7 +54,7 @@ program aleo_name_service_registry_v2.aleo {
     // nft_owner approved address to transfer nft
     mapping allowances: field => field;
 
-    mapping general_settings: u8 => u128;
+    mapping general_settings: u8 => field;
     mapping toggle_settings: u8 => u32;
 
     inline calc_name_field(name: [u128; 4], parent: field) -> field {
@@ -87,27 +87,26 @@ program aleo_name_service_registry_v2.aleo {
 
     async transition initialize_collection(
         public total: u128,
-        public symbol: u128,
-        public base_uri: [u128; 4],
+        public symbol: field,
+        public base_uri: [field; 4],
     ) -> Future {
-        // set the caller to admin
-        let admin: u128 = BHP256::hash_to_u128(self.caller);
-        return finalize_initialize_collection(total, symbol, admin, base_uri);
+        // set admin to the caller
+        return finalize_initialize_collection(total, symbol, self.caller as field, base_uri);
     }
 
     async function finalize_initialize_collection(
         public total: u128,
-        public symbol: u128,
-        public admin: u128,
-        public base_uri: [u128; 4],
+        public symbol: field,
+        public admin: field,
+        public base_uri: [field; 4],
     ) {
         // Ensure initialize cannot be called twice!
         let toggle_settings_status: u32 = toggle_settings.get_or_use(0u8, 0u32);
         let is_initialized: u32 = toggle_settings_status & 1u32;
         assert_eq(is_initialized, 0u32);
 
-        general_settings.set(0u8, total); // This setting is for the Leo wallet, no real effect on the contract
-        general_settings.set(1u8, total); // This setting is for the Leo wallet, no real effect on the contract
+        general_settings.set(0u8, total as field); // This setting is for the Leo wallet, no real effect on the contract
+        general_settings.set(1u8, total as field); // This setting is for the Leo wallet, no real effect on the contract
         general_settings.set(2u8, symbol); // Symbol for the NFT
         general_settings.set(3u8, base_uri[0u8]); // Base URI for NFT
         general_settings.set(4u8, base_uri[1u8]);
@@ -125,33 +124,35 @@ program aleo_name_service_registry_v2.aleo {
     async transition set_admin(
         private admin: address
     ) -> Future {
-        let hash_caller: u128 = BHP256::hash_to_u128(self.caller);
-        let new_admin: u128 = BHP256::hash_to_u128(admin);
-        return finalize_set_admin(hash_caller, new_admin);
+        return finalize_set_admin(self.caller as field, admin as field);
     }
 
     async function finalize_set_admin(
-        public hash_caller: u128,
-        public new_admin: u128
+        public caller: field,
+        public new_admin: field
     ) {
         // check admin
-        assert_eq(hash_caller, general_settings.get(7u8));
+        assert_eq(caller, general_settings.get(7u8));
         general_settings.set(7u8, new_admin); // Admin hash address
     }
 
-    async transition update_base_uri(
-        public base_uri: [u128; 4]
+    async transition update_settings(
+        key: u8,
+        value: field
     ) -> Future {
-        let hash_caller: u128 = BHP256::hash_to_u128(self.caller);
-        return finalize_update_base_uri(hash_caller, base_uri);
+        assert_neq(key, 0u8);
+        assert_neq(key, 1u8);
+        assert_neq(key, 7u8);
+        return finalize_update_settings(self.caller as field, key, value);
     }
 
-    async function finalize_update_base_uri(
-        public hash_caller: u128,
-        public base_uri: [u128; 4]
+    async function finalize_update_settings(
+        public caller: field,
+        public key: u8,
+        public value: field
     ) {
         // check admin
-        assert_eq(hash_caller, general_settings.get(7u8));
+        assert_eq(caller, general_settings.get(7u8));
         // Ensure collection is initialized and not frozen.
         let toggle_settings_status: u32 = toggle_settings.get(0u8);
         // initialized & frozen flags = 0b0000...1001 = 9u32
@@ -159,26 +160,22 @@ program aleo_name_service_registry_v2.aleo {
         let is_initialized_and_not_frozen: u32 = toggle_settings_status & 9u32;
         assert_eq(is_initialized_and_not_frozen, 1u32);
 
-        general_settings.set(3u8, base_uri[0u8]); // Base URI for NFT
-        general_settings.set(4u8, base_uri[1u8]);
-        general_settings.set(5u8, base_uri[2u8]);
-        general_settings.set(6u8, base_uri[3u8]);
+        general_settings.set(key, value);
     }
 
     // call this function to toggle minting, the whitelist requirement, or to permanently freeze the contract
     async transition update_toggle_settings(
         public toggle_settings_bitstring: u32
     ) -> Future {
-        let hash_caller: u128 = BHP256::hash_to_u128(self.caller);
-        return finalize_update_toggle_settings(hash_caller, toggle_settings_bitstring);
+        return finalize_update_toggle_settings(self.caller as field, toggle_settings_bitstring);
     }
 
     async function finalize_update_toggle_settings(
-        public hash_caller: u128,
+        public caller: field,
         public toggle_settings_bitstring: u32
     ) {
         // check admin
-        assert_eq(hash_caller, general_settings.get(7u8));
+        assert_eq(caller, general_settings.get(7u8));
         // Ensure collection is initialized and not frozen.
         let toggle_settings_status: u32 = toggle_settings.get(0u8);
         // initialized & frozen flags = 0b0000...1001 = 9u32
@@ -200,23 +197,22 @@ program aleo_name_service_registry_v2.aleo {
         tld: [u128; 4]
     ) -> Future {
         let (name_field, name_hash): (field, field) = calc_name_hash(tld, 0field);
-        let hash_caller: u128 = BHP256::hash_to_u128(self.caller);
         let name_struct: NameStruct = NameStruct {
             name: tld,
             parent: 0field,
             resolver: 0u128
         };
-        return finalize_register_tld(hash_caller, registrar, name_hash, name_struct);
+        return finalize_register_tld(self.caller as field, registrar, name_hash, name_struct);
     }
 
     async function finalize_register_tld(
-        hash_caller: u128,
+        caller: field,
         registrar: address,
         name_hash: field,
         name_struct: NameStruct
     ) {
         // check admin
-        assert_eq(hash_caller, general_settings.get(7u8));
+        assert_eq(caller, general_settings.get(7u8));
         // Check if the name has already been registered
         assert_eq(names.contains(name_hash), false);
         names.set(name_hash, name_struct);
