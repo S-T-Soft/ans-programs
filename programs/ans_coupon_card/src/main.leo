@@ -1,11 +1,14 @@
 // The 'ans_coupon_card' program.
-program ans_coupon_card_v2.aleo {
+program ans_coupon_card_v3.aleo {
+    const ADMIN_ADDR: address = aleo1sr8d93usu395zc29qcl35ul2e7hl2538hl8pehe4ms88q4g70gxq3ffw0v;
+
     record CouponCard {
         owner: address,
         // 1 means register price is: origin_price * 0.01
         discount_percent: u8,
         limit_name_length: u8,
-        tld: field
+        tld: field,
+        count: u64
     }
 
     struct CardOwner {
@@ -22,16 +25,14 @@ program ans_coupon_card_v2.aleo {
     mapping cards: field => u64;
 
     async transition initialize() -> Future {
-        return finalize_initialize(self.caller);
+        return finalize_initialize();
     }
 
-    async function finalize_initialize(
-        admin: address
-    ) {
+    async function finalize_initialize() {
         let current_admin: address = admins.get_or_use(0u8, self.address);
         assert_eq(current_admin, self.address);
 
-        admins.set(0u8, admin);
+        admins.set(0u8, ADMIN_ADDR);
     }
 
     async transition set_admin(
@@ -51,40 +52,63 @@ program ans_coupon_card_v2.aleo {
 
     transition transfer_private(
         card: CouponCard,
-        private receiver: address
-    ) -> CouponCard {
-        return CouponCard {
+        receiver: address,
+        count: u64
+    ) -> (CouponCard, CouponCard) {
+        let new_card: CouponCard = CouponCard {
             owner: receiver,
             discount_percent: card.discount_percent,
             limit_name_length: card.limit_name_length,
-            tld: card.tld
+            tld: card.tld,
+            count: count
         };
+        let remain_card: CouponCard = CouponCard {
+            owner: card.owner,
+            discount_percent: card.discount_percent,
+            limit_name_length: card.limit_name_length,
+            tld: card.tld,
+            count: card.count - count
+        };
+        return (new_card, remain_card);
     }
 
     async transition transfer_private_to_public(
         card: CouponCard,
-        public receiver: address
-    ) -> Future {
+        public receiver: address,
+        count: u64
+    ) -> (CouponCard, Future) {
         let card_owner: CardOwner = CardOwner {
             account: receiver,
             discount_percent: card.discount_percent,
             limit_name_length: card.limit_name_length,
             tld: card.tld
         };
+        let remain_card: CouponCard = CouponCard {
+            owner: card.owner,
+            discount_percent: card.discount_percent,
+            limit_name_length: card.limit_name_length,
+            tld: card.tld,
+            count: card.count - count
+        };
         let key: field = BHP256::hash_to_field(card_owner);
-        return finalize_transfer_private_to_public(key);
+        let f: Future = finalize_transfer_private_to_public(key, count);
+        return (remain_card, f);
     }
 
-    async function finalize_transfer_private_to_public (key: field) {
-        let count: u64 = cards.get_or_use(key, 0u64);
-        cards.set(key, count + 1u64);
+    async function finalize_transfer_private_to_public (
+        key: field,
+        count: u64
+    ) {
+        let current_count: u64 = cards.get_or_use(key, 0u64);
+        cards.set(key, current_count + count);
     }
 
     async transition transfer_public_to_private (
         receiver: address,
         discount_percent: u8,
         limit_name_length: u8,
-        tld: field
+        tld: field,
+        count: u64
     ) -> (CouponCard, Future) {
         let card_owner: CardOwner = CardOwner {
             account: self.caller,
@@ -97,14 +121,18 @@ program ans_coupon_card_v2.aleo {
             owner: receiver,
             discount_percent: discount_percent,
             limit_name_length: limit_name_length,
-            tld: tld
-        }, finalize_transfer_public_to_private(key));
+            tld: tld,
+            count: count
+        }, finalize_transfer_public_to_private(key, count));
     }
 
-    async function finalize_transfer_public_to_private (key: field) {
-        let count: u64 = cards.get(key);
-        assert(count > 0u64);
-        cards.set(key, count - 1u64);
+    async function finalize_transfer_public_to_private (
+        key: field,
+        count: u64
+    ) {
+        let current_count: u64 = cards.get(key);
+        assert(current_count >= count);
+        cards.set(key, current_count - count);
     }
 
     async transition transfer_public(
@@ -148,14 +176,16 @@ program ans_coupon_card_v2.aleo {
         receiver: address,
         discount_percent: u8,
         limit_name_length: u8,
-        tld: field
+        tld: field,
+        count: u64
     ) -> (CouponCard, Future) {
         assert(discount_percent < 100u8);
         let card: CouponCard = CouponCard{
             owner: receiver,
             discount_percent: discount_percent,
             limit_name_length: limit_name_length,
-            tld: tld
+            tld: tld,
+            count: count
         };
         return (card, finalize_issue_coupon_card(self.caller));
     }
@@ -197,5 +227,14 @@ program ans_coupon_card_v2.aleo {
         cards.set(key, current_count + count);
     }
 
-    transition use(card: CouponCard) {}
+    transition use(card: CouponCard) -> CouponCard {
+        assert(card.count > 0u64);
+        return CouponCard {
+            owner: card.owner,
+            discount_percent: card.discount_percent,
+            limit_name_length: card.limit_name_length,
+            tld: card.tld,
+            count: card.count - 1u64
+        };
+    }
 }

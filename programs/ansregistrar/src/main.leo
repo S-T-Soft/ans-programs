@@ -1,11 +1,11 @@
 import credits.aleo;
-import ans_coupon_card_v2.aleo;
-import aleo_name_service_registry_v3.aleo;
+import ans_coupon_card_v3.aleo;
+import aleo_name_service_registry_v4.aleo;
 import pondo_core_protocolv1.aleo;
 
-program ans_registrar_v5.aleo {
+program ans_registrar_v6.aleo {
+    const ADMIN_ADDR: address = aleo1sr8d93usu395zc29qcl35ul2e7hl2538hl8pehe4ms88q4g70gxq3ffw0v;
     const ADMIN: u8 = 0u8;
-    const INITIALIZED: u8 = 1u8;
     const MINTING_FLAG: u8 = 2u8;
     const COUPON_USE_FLAG: u8 = 3u8;
     const STAKE_GAP: u8 = 4u8;
@@ -43,11 +43,11 @@ program ans_registrar_v5.aleo {
         if (length == 2u8) {
             return 250000000u64;
         }
-        return 1250000000u64;
+        return 9999000000u64;
     }
 
     async transition initialize_registrar() -> Future {
-        let admin: u128 = BHP256::hash_to_u128(self.caller);
+        let admin: u128 = BHP256::hash_to_u128(ADMIN_ADDR);
         return finalize_initialize_registrar(admin);
     }
 
@@ -55,11 +55,10 @@ program ans_registrar_v5.aleo {
         admin: u128
     ) {
         // Ensure initialize cannot be called twice!
-        let is_initialized: u128 = general_settings.get_or_use(INITIALIZED, 0u128);
+        let is_initialized: u128 = general_settings.get_or_use(ADMIN, 0u128);
         assert_eq(is_initialized, 0u128);
 
         general_settings.set(ADMIN, admin);
-        general_settings.set(INITIALIZED, 1u128);
         general_settings.set(MINTING_FLAG, 0u128);
         general_settings.set(COUPON_USE_FLAG, 1u128);
         general_settings.set(STAKE_GAP, 1_000_000u128);
@@ -106,14 +105,14 @@ program ans_registrar_v5.aleo {
         name: [u128; 4],
         parent: field,
         receiver: address,
-        card: ans_coupon_card_v2.aleo/CouponCard
+        card: ans_coupon_card_v3.aleo/CouponCard
     ) -> Future {
         assert_eq(card.discount_percent, 0u8);
         assert(card.tld == parent || card.tld == 0field);
         let length: u8 = get_name_length(name);
         assert(length >= card.limit_name_length);
-        let (n, f): (aleo_name_service_registry_v3.aleo/NFT, Future) = aleo_name_service_registry_v3.aleo/register(name, parent, receiver, 0u128);
-        ans_coupon_card_v2.aleo/use(card);
+        let (n, f): (aleo_name_service_registry_v4.aleo/NFT, Future) = aleo_name_service_registry_v4.aleo/register(name, parent, receiver, 0field);
+        ans_coupon_card_v3.aleo/use(card);
         return finalize_register_free(f);
     }
 
@@ -135,7 +134,7 @@ program ans_registrar_v5.aleo {
         let price: u64 = calc_price(length);
         // this program address receive credits
         let (r, f): (credits.aleo/credits, Future) = credits.aleo/transfer_private_to_public(pay_record, self.address, price);
-        let (n, f2): (aleo_name_service_registry_v3.aleo/NFT, Future) = aleo_name_service_registry_v3.aleo/register(name, parent, receiver, 0u128);
+        let (n, f2): (aleo_name_service_registry_v4.aleo/NFT, Future) = aleo_name_service_registry_v4.aleo/register(name, parent, receiver, 0field);
         return finalize_register_fld(f, f2);
     }
 
@@ -157,7 +156,7 @@ program ans_registrar_v5.aleo {
         let price: u64 = calc_price(length);
         // this program address receive credits
         let f: Future = credits.aleo/transfer_public_as_signer(self.address, price);
-        let (n, f2): (aleo_name_service_registry_v3.aleo/NFT, Future) = aleo_name_service_registry_v3.aleo/register(name, parent, receiver, 0u128);
+        let (n, f2): (aleo_name_service_registry_v4.aleo/NFT, Future) = aleo_name_service_registry_v4.aleo/register(name, parent, receiver, 0field);
         return finalize_register_fld_public(f, f2);
     }
 
@@ -174,7 +173,7 @@ program ans_registrar_v5.aleo {
         parent: field,
         receiver: address,
         pay_record: credits.aleo/credits,
-        card: ans_coupon_card_v2.aleo/CouponCard
+        card: ans_coupon_card_v3.aleo/CouponCard
     ) -> Future {
         assert(card.tld == parent || card.tld == 0field);
         let length: u8 = get_name_length(name);
@@ -185,8 +184,8 @@ program ans_registrar_v5.aleo {
         price = price * card.discount_percent as u64 / 100u64;
         // this program address receive credits
         let (r, f): (credits.aleo/credits, Future) = credits.aleo/transfer_private_to_public(pay_record, self.address, price);
-        let (n, f2): (aleo_name_service_registry_v3.aleo/NFT, Future) = aleo_name_service_registry_v3.aleo/register(name, parent, receiver, 0u128);
-        ans_coupon_card_v2.aleo/use(card);
+        let (n, f2): (aleo_name_service_registry_v4.aleo/NFT, Future) = aleo_name_service_registry_v4.aleo/register(name, parent, receiver, 0field);
+        ans_coupon_card_v3.aleo/use(card);
         return finalize_register_fld_with_coupon(f, f2);
     }
 
@@ -202,7 +201,7 @@ program ans_registrar_v5.aleo {
         name: [u128; 4],
         parent: field,
         receiver: address,
-        card: ans_coupon_card_v2.aleo/CouponCard
+        card: ans_coupon_card_v3.aleo/CouponCard
     ) -> Future {
         assert(card.tld == parent || card.tld == 0field);
         let length: u8 = get_name_length(name);
@@ -213,8 +212,8 @@ program ans_registrar_v5.aleo {
         price = price * card.discount_percent as u64 / 100u64;
         // this program address receive credits
         let f: Future = credits.aleo/transfer_public_as_signer(self.address, price);
-        let (n, f2): (aleo_name_service_registry_v3.aleo/NFT, Future) = aleo_name_service_registry_v3.aleo/register(name, parent, receiver, 0u128);
-        ans_coupon_card_v2.aleo/use(card);
+        let (n, f2): (aleo_name_service_registry_v4.aleo/NFT, Future) = aleo_name_service_registry_v4.aleo/register(name, parent, receiver, 0field);
+        ans_coupon_card_v3.aleo/use(card);
         return finalize_register_fld_with_coupon_public(f, f2);
     }
 
@@ -270,7 +269,7 @@ program ans_registrar_v5.aleo {
         nft_edition: scalar,
         receiver: address
     ) -> Future {
-        let (nft, f): (aleo_name_service_registry_v3.aleo/NFTView, Future) = aleo_name_service_registry_v3.aleo/transfer_public(nft_data, nft_edition, receiver);
+        let (nft, f): (aleo_name_service_registry_v4.aleo/NFTView, Future) = aleo_name_service_registry_v4.aleo/transfer_public(nft_data, nft_edition, receiver);
         let hash_caller: u128 = BHP256::hash_to_u128(self.caller);
         return finalize_transfer_public(hash_caller, f);
     }

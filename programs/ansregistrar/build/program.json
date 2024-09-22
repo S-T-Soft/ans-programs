@@ -1,16 +1,16 @@
 {
-  "program": "ans_registrar_v5.aleo",
+  "program": "ans_registrar_v6.aleo",
   "version": "0.0.1",
   "description": "",
   "license": "MIT",
   "dependencies": [
     {
-      "name": "aleo_name_service_registry_v3.aleo",
+      "name": "aleo_name_service_registry_v4.aleo",
       "location": "local",
       "path": "../registry"
     },
     {
-      "name": "ans_coupon_card_v2.aleo",
+      "name": "ans_coupon_card_v3.aleo",
       "location": "local",
       "path": "../ans_coupon_card"
     },

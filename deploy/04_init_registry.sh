@@ -1,10 +1,6 @@
 #!/usr/bin/env bash
 
 env="dev"
-# use max u128 as total
-total=340282366920938463463374607431768211455u128
-# ANS symbol
-symbol="ANS"
 
 for arg in "$@"; do
   case $arg in
@@ -32,7 +28,6 @@ else
   base_uri="https://testnet-api.aleonames.id/token/"
 fi
 
-symbol=$(node stringEncode.ts $symbol 1)
 base_uri_arr=$(node stringEncode.ts $base_uri 4)
 
 root=$(pwd)
@@ -51,10 +46,10 @@ echo -e "Initialize \033[32m${program}\033[0m in \033[32m${env}\033[0m"
 
 if [[ -z "${FEE_RECORD}" ]]; then
   output=$(leo execute -b --private-key "${PRIVATE_KEY}" -p "${program%.aleo}" \
-   --network "${NETWORK}" initialize_collection ${total} "${symbol}" "${base_uri_arr}")
+   --network "${NETWORK}" initialize_collection "${base_uri_arr}")
 else
   output=$(leo execute -b --private-key "${PRIVATE_KEY}" --record "${FEE_RECORD}" \
-   --network "${NETWORK}" -p "${program%.aleo}" initialize_collection ${total} "${symbol}" "${base_uri_arr}")
+   --network "${NETWORK}" -p "${program%.aleo}" initialize_collection "${base_uri_arr}")
 fi
 
 echo "${output}"
