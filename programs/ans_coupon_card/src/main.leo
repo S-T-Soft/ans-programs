@@ -1,6 +1,6 @@
 // The 'ans_coupon_card' program.
-program ans_coupon_card_v3.aleo {
-    const ADMIN_ADDR: address = aleo1sr8d93usu395zc29qcl35ul2e7hl2538hl8pehe4ms88q4g70gxq3ffw0v;
+program ans_coupon_card.aleo {
+    const ADMIN_ADDR: address = aleo1ans8gd200s2yyrx72y7txgee5snq6v6la8wa3r8r0ups4l2hjv9qku8k6k;
 
     record CouponCard {
         owner: address,
@@ -71,7 +71,7 @@ program ans_coupon_card_v3.aleo {
         };
         return (new_card, remain_card);
     }
-
+å
     async transition transfer_private_to_public(
         card: CouponCard,
         public receiver: address,

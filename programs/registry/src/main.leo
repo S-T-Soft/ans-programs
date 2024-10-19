@@ -1,8 +1,8 @@
 // The 'register' program.
-import ans_utils_v2.aleo;
+import ans_utils.aleo;
 
-program aleo_name_service_registry_v4.aleo {
-    const ADMIN_ADDR: address = aleo1sr8d93usu395zc29qcl35ul2e7hl2538hl8pehe4ms88q4g70gxq3ffw0v;
+program aleo_name_service_registry.aleo {
+    const ADMIN_ADDR: address = aleo1ans0q6xzgs6npc0sd248lg7agrjtpd8m5etn6xp2f70xtfd7nvys536e09;
     // Structure holding the ASCII bits of a domain name. If the length of the bits is less than 512,
     // zeros are appended in the end. The bits are then split into four parts, with name[0] holding the
     // first 128 bits and name[3] holding the last 128 bits.
@@ -45,6 +45,8 @@ program aleo_name_service_registry_v4.aleo {
     mapping nft_owners: field => address;
     // Mapping from a field(hash name) to an NameStruct structure
     mapping names: field => NameStruct;
+    // Mapping store all TLDs, name_hash to name
+    mapping tlds: field => [u128; 4];
     // Mapping from an address to a primary name
     mapping primary_names: address => field;
     // Mapping from a name_hash to a version number, version plus one when the name is transferred or burned
@@ -100,8 +102,8 @@ program aleo_name_service_registry_v4.aleo {
         let is_initialized: u32 = toggle_settings_status & 1u32;
         assert_eq(is_initialized, 0u32);
 
-        general_settings.set(0u8, 1000000000field); // This setting is for the Leo wallet, no real effect on the contract
-        general_settings.set(1u8, 1000000000field); // This setting is for the Leo wallet, no real effect on the contract
+        general_settings.set(0u8, 1000000000field); // This setting is for the NFT, no real effect on the contract
+        general_settings.set(1u8, 1000000000field); // This setting is for the NFT, no real effect on the contract
         general_settings.set(2u8, 4279891field); // Symbol for the NFT "ANS"
         general_settings.set(3u8, base_uri[0u8]); // Base URI for NFT
         general_settings.set(4u8, base_uri[1u8]);
@@ -212,6 +214,7 @@ program aleo_name_service_registry_v4.aleo {
         assert_eq(names.contains(name_hash), false);
         names.set(name_hash, name_struct);
         nft_owners.set(name_hash, registrar);
+        tlds.set(name_hash, name_struct.name);
     }
 
     // register a sub domain
@@ -223,7 +226,7 @@ program aleo_name_service_registry_v4.aleo {
         resolver: field
     ) -> (NFT, Future) {
         // Validate the name before registration
-        assert(ans_utils_v2.aleo/validate_name(name));
+        assert(ans_utils.aleo/validate_name(name));
         let (name_field, name_hash): (field, field) = calc_name_hash(name, parent);
         let nft_data: data = data {
             metadata: [name_field, 0field, 0field, 0field]
@@ -273,7 +276,7 @@ program aleo_name_service_registry_v4.aleo {
         resolver: field
     ) -> (NFT, NFT, Future) {
         // Validate the name before registration
-        assert(ans_utils_v2.aleo/validate_name(name));
+        assert(ans_utils.aleo/validate_name(name));
         let parent_name_hash: field = calc_name_hash_for_data(parent.data);
         let (name_field, name_hash): (field, field) = calc_name_hash(name, parent_name_hash);
         let nft_data: data = data {
@@ -328,7 +331,7 @@ program aleo_name_service_registry_v4.aleo {
         resolver: field
     ) -> (NFT, Future) {
         // Validate the name before registration
-        assert(ans_utils_v2.aleo/validate_name(name));
+        assert(ans_utils.aleo/validate_name(name));
         let (name_field, name_hash): (field, field) = calc_name_hash(name, parent);
         let nft_data: data = data {
             metadata: [name_field, 0field, 0field, 0field]

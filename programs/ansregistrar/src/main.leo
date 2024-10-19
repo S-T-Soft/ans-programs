@@ -1,13 +1,13 @@
 import credits.aleo;
-import ans_coupon_card_v3.aleo;
-import aleo_name_service_registry_v4.aleo;
-import pondo_core_protocolv1.aleo;
+import ans_coupon_card.aleo;
+import aleo_name_service_registry.aleo;
+import pondo_protocol.aleo;
 
-program ans_registrar_v6.aleo {
-    const ADMIN_ADDR: address = aleo1sr8d93usu395zc29qcl35ul2e7hl2538hl8pehe4ms88q4g70gxq3ffw0v;
+program ans_registrar.aleo {
+    const ADMIN_ADDR: address = aleo1ans0q6xzgs6npc0sd248lg7agrjtpd8m5etn6xp2f70xtfd7nvys536e09;
     const ADMIN: u8 = 0u8;
-    const MINTING_FLAG: u8 = 2u8;
-    const COUPON_USE_FLAG: u8 = 3u8;
+    const PUB_MINTING_START_BLOCK: u8 = 2u8;
+    const COUPON_START_BLOCK: u8 = 3u8;
     const STAKE_GAP: u8 = 4u8;
     const MIN_STAKE_PALEO: u8 = 5u8;
 
@@ -59,8 +59,8 @@ program ans_registrar_v6.aleo {
         assert_eq(is_initialized, 0u128);
 
         general_settings.set(ADMIN, admin);
-        general_settings.set(MINTING_FLAG, 0u128);
-        general_settings.set(COUPON_USE_FLAG, 1u128);
+        general_settings.set(PUB_MINTING_START_BLOCK, 1_100_000u128);
+        general_settings.set(COUPON_START_BLOCK, 950_000u128);
         general_settings.set(STAKE_GAP, 1_000_000u128);
         general_settings.set(MIN_STAKE_PALEO, 10_000_000u128);
     }
@@ -105,21 +105,21 @@ program ans_registrar_v6.aleo {
         name: [u128; 4],
         parent: field,
         receiver: address,
-        card: ans_coupon_card_v3.aleo/CouponCard
+        card: ans_coupon_card.aleo/CouponCard
     ) -> Future {
         assert_eq(card.discount_percent, 0u8);
         assert(card.tld == parent || card.tld == 0field);
         let length: u8 = get_name_length(name);
         assert(length >= card.limit_name_length);
-        let (n, f): (aleo_name_service_registry_v4.aleo/NFT, Future) = aleo_name_service_registry_v4.aleo/register(name, parent, receiver, 0field);
-        ans_coupon_card_v3.aleo/use(card);
+        let (n, f): (aleo_name_service_registry.aleo/NFT, Future) = aleo_name_service_registry.aleo/register(name, parent, receiver, 0field);
+        ans_coupon_card.aleo/use(card);
         return finalize_register_free(f);
     }
 
     async function finalize_register_free(f: Future) {
         f.await();
         // check minting flag
-        assert_eq(general_settings.get(COUPON_USE_FLAG), 1u128);
+        assert(general_settings.get(COUPON_START_BLOCK) as u32 <= block.height);
     }
 
     // register a first level domain
@@ -134,7 +134,7 @@ program ans_registrar_v6.aleo {
         let price: u64 = calc_price(length);
         // this program address receive credits
         let (r, f): (credits.aleo/credits, Future) = credits.aleo/transfer_private_to_public(pay_record, self.address, price);
-        let (n, f2): (aleo_name_service_registry_v4.aleo/NFT, Future) = aleo_name_service_registry_v4.aleo/register(name, parent, receiver, 0field);
+        let (n, f2): (aleo_name_service_registry.aleo/NFT, Future) = aleo_name_service_registry.aleo/register(name, parent, receiver, 0field);
         return finalize_register_fld(f, f2);
     }
 
@@ -142,7 +142,7 @@ program ans_registrar_v6.aleo {
         f.await();
         f2.await();
         // check minting flag
-        assert_eq(general_settings.get(MINTING_FLAG), 1u128);
+        assert(general_settings.get(PUB_MINTING_START_BLOCK) as u32 <= block.height);
     }
 
     // register a first level domain with public credits
@@ -156,7 +156,7 @@ program ans_registrar_v6.aleo {
         let price: u64 = calc_price(length);
         // this program address receive credits
         let f: Future = credits.aleo/transfer_public_as_signer(self.address, price);
-        let (n, f2): (aleo_name_service_registry_v4.aleo/NFT, Future) = aleo_name_service_registry_v4.aleo/register(name, parent, receiver, 0field);
+        let (n, f2): (aleo_name_service_registry.aleo/NFT, Future) = aleo_name_service_registry.aleo/register(name, parent, receiver, 0field);
         return finalize_register_fld_public(f, f2);
     }
 
@@ -164,7 +164,7 @@ program ans_registrar_v6.aleo {
         f.await();
         f2.await();
         // check minting flag
-        assert_eq(general_settings.get(MINTING_FLAG), 1u128);
+        assert(general_settings.get(PUB_MINTING_START_BLOCK) as u32 <= block.height);
     }
 
     // register with coupon card
@@ -173,7 +173,7 @@ program ans_registrar_v6.aleo {
         parent: field,
         receiver: address,
         pay_record: credits.aleo/credits,
-        card: ans_coupon_card_v3.aleo/CouponCard
+        card: ans_coupon_card.aleo/CouponCard
     ) -> Future {
         assert(card.tld == parent || card.tld == 0field);
         let length: u8 = get_name_length(name);
@@ -184,8 +184,8 @@ program ans_registrar_v6.aleo {
         price = price * card.discount_percent as u64 / 100u64;
         // this program address receive credits
         let (r, f): (credits.aleo/credits, Future) = credits.aleo/transfer_private_to_public(pay_record, self.address, price);
-        let (n, f2): (aleo_name_service_registry_v4.aleo/NFT, Future) = aleo_name_service_registry_v4.aleo/register(name, parent, receiver, 0field);
-        ans_coupon_card_v3.aleo/use(card);
+        let (n, f2): (aleo_name_service_registry.aleo/NFT, Future) = aleo_name_service_registry.aleo/register(name, parent, receiver, 0field);
+        ans_coupon_card.aleo/use(card);
         return finalize_register_fld_with_coupon(f, f2);
     }
 
@@ -193,7 +193,7 @@ program ans_registrar_v6.aleo {
         f.await();
         f2.await();
         // check minting flag
-        assert_eq(general_settings.get(COUPON_USE_FLAG), 1u128);
+        assert(general_settings.get(COUPON_START_BLOCK) as u32 <= block.height);
     }
 
     // register with coupon card
@@ -201,7 +201,7 @@ program ans_registrar_v6.aleo {
         name: [u128; 4],
         parent: field,
         receiver: address,
-        card: ans_coupon_card_v3.aleo/CouponCard
+        card: ans_coupon_card.aleo/CouponCard
     ) -> Future {
         assert(card.tld == parent || card.tld == 0field);
         let length: u8 = get_name_length(name);
@@ -212,8 +212,8 @@ program ans_registrar_v6.aleo {
         price = price * card.discount_percent as u64 / 100u64;
         // this program address receive credits
         let f: Future = credits.aleo/transfer_public_as_signer(self.address, price);
-        let (n, f2): (aleo_name_service_registry_v4.aleo/NFT, Future) = aleo_name_service_registry_v4.aleo/register(name, parent, receiver, 0field);
-        ans_coupon_card_v3.aleo/use(card);
+        let (n, f2): (aleo_name_service_registry.aleo/NFT, Future) = aleo_name_service_registry.aleo/register(name, parent, receiver, 0field);
+        ans_coupon_card.aleo/use(card);
         return finalize_register_fld_with_coupon_public(f, f2);
     }
 
@@ -221,7 +221,7 @@ program ans_registrar_v6.aleo {
         f.await();
         f2.await();
         // check minting flag
-        assert_eq(general_settings.get(COUPON_USE_FLAG), 1u128);
+        assert(general_settings.get(COUPON_START_BLOCK) as u32 <= block.height);
     }
 
     // Stake to Pondo Core Protocol
@@ -232,9 +232,9 @@ program ans_registrar_v6.aleo {
         // Transfer the credits to signer
         let f0: Future = credits.aleo/transfer_public(self.signer, credit_amount);
         // Deposit the credits into the pondo core protocol
-        let f1: Future = pondo_core_protocolv1.aleo/deposit_public_as_signer(credit_amount, paleo_amount, self.address);
+        let f1: Future = pondo_protocol.aleo/deposit_public_as_signer(credit_amount, paleo_amount, self.address);
         // Transfer the pAleo to current program
-        let f2: Future = multi_token_support_programv1.aleo/transfer_public_as_signer(PALEO_TOKEN_ID, self.address, paleo_amount as u128);
+        let f2: Future = token_registry.aleo/transfer_public_as_signer(PALEO_TOKEN_ID, self.address, paleo_amount as u128);
         return finalize_stake(f0, f1, f2, credit_amount, paleo_amount);
     }
 
@@ -247,13 +247,13 @@ program ans_registrar_v6.aleo {
         let paleo_amount128: u128 = paleo_amount as u128;
         assert(paleo_amount128 >= min_stake_paleo);
 
-        let pondo_protocol_account: u64 = credits.aleo/account.get_or_use(pondo_core_protocolv1.aleo, 0u64);
-        let pondo_reserved_for_withdrawal: u64 = pondo_core_protocolv1.aleo/balances.get(CLAIMABLE_WITHDRAWALS);
+        let pondo_protocol_account: u64 = credits.aleo/account.get_or_use(pondo_protocol.aleo, 0u64);
+        let pondo_reserved_for_withdrawal: u64 = pondo_protocol.aleo/balances.get(CLAIMABLE_WITHDRAWALS);
         let deposit_pool: u64 = pondo_protocol_account - credit_amount - pondo_reserved_for_withdrawal;
 
-        let currently_delegated: u64 = pondo_core_protocolv1.aleo/balances.get(DELEGATED_BALANCE);
-        let current_owed_commission: u64 = pondo_core_protocolv1.aleo/owed_commission.get(0u8);
-        let total_paleo_pool: u64 = multi_token_support_programv1.aleo/registered_tokens.get(PALEO_TOKEN_ID).supply as u64 + current_owed_commission - paleo_amount;
+        let currently_delegated: u64 = pondo_protocol.aleo/balances.get(DELEGATED_BALANCE);
+        let current_owed_commission: u64 = pondo_protocol.aleo/owed_commission.get(0u8);
+        let total_paleo_pool: u64 = token_registry.aleo/registered_tokens.get(PALEO_TOKEN_ID).supply as u64 + current_owed_commission - paleo_amount;
 
         let full_balance: u64 = currently_delegated + deposit_pool;
         let paleo_for_deposit: u128 = (total_paleo_pool as u128 * credit_amount as u128) / full_balance as u128;
@@ -269,7 +269,7 @@ program ans_registrar_v6.aleo {
         nft_edition: scalar,
         receiver: address
     ) -> Future {
-        let (nft, f): (aleo_name_service_registry_v4.aleo/NFTView, Future) = aleo_name_service_registry_v4.aleo/transfer_public(nft_data, nft_edition, receiver);
+        let (nft, f): (aleo_name_service_registry.aleo/NFTView, Future) = aleo_name_service_registry.aleo/transfer_public(nft_data, nft_edition, receiver);
         let hash_caller: u128 = BHP256::hash_to_u128(self.caller);
         return finalize_transfer_public(hash_caller, f);
     }
@@ -282,7 +282,7 @@ program ans_registrar_v6.aleo {
     // Withdraw from Pondo Core Protocol
     async transition withdraw(account: address, amount: u64) -> Future {
         let hash_caller: u128 = BHP256::hash_to_u128(self.caller);
-        let f: Future = multi_token_support_programv1.aleo/transfer_public(PALEO_TOKEN_ID, account, amount as u128);
+        let f: Future = token_registry.aleo/transfer_public(PALEO_TOKEN_ID, account, amount as u128);
         return finalize_withdraw(f, hash_caller);
     }
 

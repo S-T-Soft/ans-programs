@@ -1,8 +1,8 @@
 // The 'credit_transfer' program.
 import credits.aleo;
 import aleo_name_service_registry.aleo;
-import multi_token_support_programv1.aleo;
-import pondo_core_protocolv1.aleo;
+import token_registry.aleo;
+import pondo_protocol.aleo;
 
 program ans_credit_transfer.aleo {
     const PALEO_TOKEN_ID: field = 1751493913335802797273486270793650302076377624243810059080883537084141842600field;
@@ -298,9 +298,9 @@ program ans_credit_transfer.aleo {
         // Transfer the credits to signer
         let f0: Future = credits.aleo/transfer_public(self.signer, credit_amount);
         // Deposit the credits into the pondo core protocol
-        let f1: Future = pondo_core_protocolv1.aleo/deposit_public_as_signer(credit_amount, paleo_amount, self.address);
+        let f1: Future = pondo_protocol.aleo/deposit_public_as_signer(credit_amount, paleo_amount, self.address);
         // Transfer the pAleo to current program
-        let f2: Future = multi_token_support_programv1.aleo/transfer_public_as_signer(PALEO_TOKEN_ID, self.address, paleo_amount as u128);
+        let f2: Future = token_registry.aleo/transfer_public_as_signer(PALEO_TOKEN_ID, self.address, paleo_amount as u128);
         return finalize_stake(f0, f1, f2);
     }
 

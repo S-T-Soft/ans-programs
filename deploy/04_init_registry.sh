@@ -20,19 +20,17 @@ if [[ ! -f ${env}.env ]]; then
   exit 1
 fi
 
+source ${env}.env
+
 # if env is testnet or dev, use testnet-api.aleonames.id
 # if env is mainnet, use api.aleonames.id
-if [[ $env == "mainnet" ]]; then
+if [[ $NETWORK == "mainnet" ]]; then
   base_uri="https://api.aleonames.id/token/"
 else
   base_uri="https://testnet-api.aleonames.id/token/"
 fi
 
 base_uri_arr=$(node stringEncode.ts $base_uri 4)
-
-root=$(pwd)
-env_file="${root}/${env}.env"
-source $env_file
 
 cd ../programs/registry || exit
 
@@ -42,7 +40,7 @@ ENDPOINT=${ENDPOINT}" > .env
 
 program=`jq -r '.program' program.json`
 
-echo -e "Initialize \033[32m${program}\033[0m in \033[32m${env}\033[0m"
+echo -e "Initialize \033[32m${program}\033[0m base_uri ${base_uri} in \033[32m${env}\033[0m"
 
 if [[ -z "${FEE_RECORD}" ]]; then
   output=$(leo execute -b --private-key "${PRIVATE_KEY}" -p "${program%.aleo}" \

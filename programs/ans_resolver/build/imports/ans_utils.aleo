@@ -1,4 +1,4 @@
-program ans_utils_v2.aleo;
+program ans_utils.aleo;
 
 
 

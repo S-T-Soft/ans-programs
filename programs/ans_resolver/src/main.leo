@@ -1,7 +1,7 @@
 // The 'ans_resolver' program.
-import aleo_name_service_registry_v4.aleo;
+import aleo_name_service_registry.aleo;
 
-program ans_resolver_v4.aleo {
+program ans_resolver.aleo {
     // Structure holding a name_hash and its type
     struct ResolverIndex {
         name: field, // The name_hash
@@ -22,7 +22,7 @@ program ans_resolver_v4.aleo {
     // category is the bits of the category string, u128 can store max of 16 characters
     // for example, "btc" is 6517858u128, "eth" is 6845541u128, "twitter" is 32199698188695412u128
     async transition set_resolver_record(
-        nft: aleo_name_service_registry_v4.aleo/NFT,
+        nft: aleo_name_service_registry.aleo/NFT,
         category: u128,
         content: [u128; 8]
     ) -> Future {
@@ -30,7 +30,7 @@ program ans_resolver_v4.aleo {
         // ensure the content is not empty
         assert(content[0u8] > 0u128);
         let name_hash: field = calc_name_hash_for_data(nft.data);
-        let new_nft: aleo_name_service_registry_v4.aleo/NFT = aleo_name_service_registry_v4.aleo/check(nft);
+        let new_nft: aleo_name_service_registry.aleo/NFT = aleo_name_service_registry.aleo/check(nft);
         return finalize_set_resolver_record(name_hash, category, content);
     }
 
@@ -39,7 +39,7 @@ program ans_resolver_v4.aleo {
         category: u128,
         content: [u128; 8]
     ) {
-        let version: u64 = aleo_name_service_registry_v4.aleo/name_versions.get_or_use(name_hash, 1u64);
+        let version: u64 = aleo_name_service_registry.aleo/name_versions.get_or_use(name_hash, 1u64);
         let resolver_index: ResolverIndex = ResolverIndex {
             name: name_hash,
             category: category,
@@ -49,11 +49,11 @@ program ans_resolver_v4.aleo {
     }
 
     async transition unset_resolver_record(
-        nft: aleo_name_service_registry_v4.aleo/NFT,
+        nft: aleo_name_service_registry.aleo/NFT,
         category: u128
     ) -> Future {
         let name_hash: field = calc_name_hash_for_data(nft.data);
-        let new_nft: aleo_name_service_registry_v4.aleo/NFT = aleo_name_service_registry_v4.aleo/check(nft);
+        let new_nft: aleo_name_service_registry.aleo/NFT = aleo_name_service_registry.aleo/check(nft);
         return finalize_unset_resolver_record(name_hash, category);
     }
 
@@ -62,7 +62,7 @@ program ans_resolver_v4.aleo {
         name_hash: field,
         category: u128
     ) {
-        let version: u64 = aleo_name_service_registry_v4.aleo/name_versions.get_or_use(name_hash, 1u64);
+        let version: u64 = aleo_name_service_registry.aleo/name_versions.get_or_use(name_hash, 1u64);
         let resolver_index: ResolverIndex = ResolverIndex {
             name: name_hash,
             category: category,
@@ -91,8 +91,8 @@ program ans_resolver_v4.aleo {
         content: [u128; 8],
         owner: address,
     ) {
-        assert_eq(owner, aleo_name_service_registry_v4.aleo/nft_owners.get(name_hash));
-        let version: u64 = aleo_name_service_registry_v4.aleo/name_versions.get_or_use(name_hash, 1u64);
+        assert_eq(owner, aleo_name_service_registry.aleo/nft_owners.get(name_hash));
+        let version: u64 = aleo_name_service_registry.aleo/name_versions.get_or_use(name_hash, 1u64);
         let resolver_index: ResolverIndex = ResolverIndex {
             name: name_hash,
             category: category,
@@ -114,8 +114,8 @@ program ans_resolver_v4.aleo {
         category: u128,
         owner: address,
     ) {
-        assert_eq(owner, aleo_name_service_registry_v4.aleo/nft_owners.get(name_hash));
-        let version: u64 = aleo_name_service_registry_v4.aleo/name_versions.get_or_use(name_hash, 1u64);
+        assert_eq(owner, aleo_name_service_registry.aleo/nft_owners.get(name_hash));
+        let version: u64 = aleo_name_service_registry.aleo/name_versions.get_or_use(name_hash, 1u64);
         let resolver_index: ResolverIndex = ResolverIndex {
             name: name_hash,
             category: category,

@@ -1,4 +1,4 @@
-# ans_coupon_card_v3.aleo
+# ans_coupon_card.aleo
 
 ## Build Guide
 

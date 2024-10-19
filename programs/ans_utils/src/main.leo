@@ -1,5 +1,5 @@
 // The 'ans_utils' program.
-program ans_utils_v2.aleo {
+program ans_utils.aleo {
     transition validate_name(name: [u128; 4]) -> bool {
         // Check if the name is empty
         assert_neq(name[0u8], 0u128);
