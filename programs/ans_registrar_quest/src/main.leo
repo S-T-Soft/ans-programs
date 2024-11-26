@@ -66,10 +66,10 @@ program ans_registrar_quest.aleo {
     ) -> Future {
         let f: Future = ans_registrar_v6.aleo/register_fld_with_coupon(name, parent, receiver, pay_record, card);
         messenger.aleo/send(ADMIN_ADDR, memo);
-        return finalize_register_fld_with_coupon(f);
+        return register_fld_with_coup(f);
     }
 
-    async function finalize_register_fld_with_coupon(f: Future) {
+    async function register_fld_with_coup(f: Future) {
         f.await();
     }
 
@@ -83,10 +83,10 @@ program ans_registrar_quest.aleo {
     ) -> Future {
         let f: Future = ans_registrar_v6.aleo/register_fld_with_coupon_public(name, parent, receiver, card);
         messenger.aleo/send(ADMIN_ADDR, memo);
-        return finalize_register_fld_with_coupon_public(f);
+        return register_fld_with_coupon_pub(f);
     }
 
-    async function finalize_register_fld_with_coupon_public(f: Future) {
+    async function register_fld_with_coupon_pub(f: Future) {
         f.await();
     }
 }

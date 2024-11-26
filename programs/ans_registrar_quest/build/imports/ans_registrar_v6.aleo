@@ -23,9 +23,6 @@ struct NameStruct:
 struct data:
     metadata as [field; 4u32];
 
-
-
-
 struct TokenMetadata:
     token_id as field;
     name as u128;
@@ -41,7 +38,6 @@ struct TokenOwner:
     account as address;
     token_id as field;
 
-
 struct admin_operation:
     arg as field;
     op_type as u8;
@@ -51,12 +47,9 @@ struct validator_state:
     validator as address;
     commission as u8;
 
-
-
 mapping general_settings:
-	key as u8.public;
-	value as u128.public;
-
+    key as u8.public;
+    value as u128.public;
 
 function transfer_public:
     input r0 as data.private;
@@ -74,9 +67,6 @@ finalize transfer_public:
     get general_settings[0u8] into r2;
     assert.eq r0 r2;
 
-
-
-
 function initialize_registrar:
     hash.bhp256 aleo1sr8d93usu395zc29qcl35ul2e7hl2538hl8pehe4ms88q4g70gxq3ffw0v into r0 as u128;
     async initialize_registrar r0 into r1;
@@ -91,9 +81,6 @@ finalize initialize_registrar:
     set 1u128 into general_settings[3u8];
     set 1_000_000u128 into general_settings[4u8];
     set 10_000_000u128 into general_settings[5u8];
-
-
-
 
 function update_setting:
     input r0 as u8.private;
@@ -110,9 +97,6 @@ finalize update_setting:
     assert.eq r0 r3;
     set r2 into general_settings[r1];
 
-
-
-
 function change_admin:
     input r0 as address.private;
     hash.bhp256 self.caller into r1 as u128;
@@ -127,8 +111,6 @@ finalize change_admin:
     assert.eq r0 r2;
     set r1 into general_settings[0u8];
 
-
-
 closure get_name_length:
     input r0 as [u128; 4u32];
     gt r0[0u32] 4294967295u128 into r1;
@@ -140,8 +122,6 @@ closure get_name_length:
     ternary r2 4u8 r6 into r7;
     ternary r1 5u8 r7 into r8;
     output r8 as u8;
-
-
 
 function register_free:
     input r0 as [u128; 4u32].private;
@@ -167,8 +147,6 @@ finalize register_free:
     get general_settings[3u8] into r1;
     assert.eq r1 1u128;
 
-
-
 closure calc_price:
     input r0 as u8;
     is.eq r0 5u8 into r1;
@@ -180,8 +158,6 @@ closure calc_price:
     ternary r2 10000000u64 r6 into r7;
     ternary r1 2000000u64 r7 into r8;
     output r8 as u64;
-
-
 
 function register_fld:
     input r0 as [u128; 4u32].private;
@@ -203,9 +179,6 @@ finalize register_fld:
     get general_settings[2u8] into r2;
     assert.eq r2 1u128;
 
-
-
-
 function register_fld_public:
     input r0 as [u128; 4u32].private;
     input r1 as field.private;
@@ -224,9 +197,6 @@ finalize register_fld_public:
     await r1;
     get general_settings[2u8] into r2;
     assert.eq r2 1u128;
-
-
-
 
 function register_fld_with_coupon:
     input r0 as [u128; 4u32].private;
@@ -259,9 +229,6 @@ finalize register_fld_with_coupon:
     get general_settings[3u8] into r2;
     assert.eq r2 1u128;
 
-
-
-
 function register_fld_with_coupon_public:
     input r0 as [u128; 4u32].private;
     input r1 as field.private;
@@ -291,9 +258,6 @@ finalize register_fld_with_coupon_public:
     await r1;
     get general_settings[3u8] into r2;
     assert.eq r2 1u128;
-
-
-
 
 function stake:
     input r0 as u64.private;
@@ -339,9 +303,6 @@ finalize stake:
     lt r25 r24 into r26;
     assert.eq r26 true;
 
-
-
-
 function withdraw:
     input r0 as address.private;
     input r1 as u64.private;
@@ -357,4 +318,3 @@ finalize withdraw:
     await r0;
     get general_settings[0u8] into r2;
     assert.eq r1 r2;
-

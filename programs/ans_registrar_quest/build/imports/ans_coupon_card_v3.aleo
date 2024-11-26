@@ -13,16 +13,13 @@ struct CardOwner:
     limit_name_length as u8;
     tld as field;
 
-
 mapping admins:
-	key as u8.public;
-	value as address.public;
-
+    key as u8.public;
+    value as address.public;
 
 mapping cards:
-	key as field.public;
-	value as u64.public;
-
+    key as field.public;
+    value as u64.public;
 
 function initialize:
     async initialize into r0;
@@ -32,9 +29,6 @@ finalize initialize:
     get.or_use admins[0u8] ans_coupon_card_v3.aleo into r0;
     assert.eq r0 ans_coupon_card_v3.aleo;
     set aleo1sr8d93usu395zc29qcl35ul2e7hl2538hl8pehe4ms88q4g70gxq3ffw0v into admins[0u8];
-
-
-
 
 function set_admin:
     input r0 as address.private;
@@ -48,8 +42,6 @@ finalize set_admin:
     assert.eq r2 r0;
     set r1 into admins[0u8];
 
-
-
 function transfer_private:
     input r0 as CouponCard.record;
     input r1 as address.private;
@@ -59,8 +51,6 @@ function transfer_private:
     cast r0.owner r0.discount_percent r0.limit_name_length r0.tld r4 into r5 as CouponCard.record;
     output r3 as CouponCard.record;
     output r5 as CouponCard.record;
-
-
 
 function transfer_private_to_public:
     input r0 as CouponCard.record;
@@ -80,9 +70,6 @@ finalize transfer_private_to_public:
     get.or_use cards[r0] 0u64 into r2;
     add r2 r1 into r3;
     set r3 into cards[r0];
-
-
-
 
 function transfer_public_to_private:
     input r0 as address.private;
@@ -105,9 +92,6 @@ finalize transfer_public_to_private:
     assert.eq r3 true;
     sub r2 r1 into r4;
     set r4 into cards[r0];
-
-
-
 
 function transfer_public:
     input r0 as address.private;
@@ -135,9 +119,6 @@ finalize transfer_public:
     add r6 r2 into r7;
     set r7 into cards[r1];
 
-
-
-
 function issue_coupon_card:
     input r0 as address.private;
     input r1 as u8.private;
@@ -155,9 +136,6 @@ finalize issue_coupon_card:
     input r0 as address.public;
     get admins[0u8] into r1;
     assert.eq r1 r0;
-
-
-
 
 function issue_coupon_card_public:
     input r0 as address.private;
@@ -181,8 +159,6 @@ finalize issue_coupon_card_public:
     get.or_use cards[r1] 0u64 into r4;
     add r4 r2 into r5;
     set r5 into cards[r1];
-
-
 
 function use:
     input r0 as CouponCard.record;

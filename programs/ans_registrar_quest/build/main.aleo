@@ -17,7 +17,6 @@ import pondo_core_protocolv1.aleo;
 import ans_registrar_v6.aleo;
 program ans_registrar_quest.aleo;
 
-
 struct NameStruct:
     name as [u128; 4u32];
     parent as field;
@@ -25,10 +24,6 @@ struct NameStruct:
 
 struct data:
     metadata as [field; 4u32];
-
-
-
-
 
 struct TokenMetadata:
     token_id as field;
@@ -45,7 +40,6 @@ struct TokenOwner:
     account as address;
     token_id as field;
 
-
 struct admin_operation:
     arg as field;
     op_type as u8;
@@ -54,8 +48,6 @@ struct admin_operation:
 struct validator_state:
     validator as address;
     commission as u8;
-
-
 
 function register_free:
     input r0 as [u128; 4u32].private;
@@ -72,9 +64,6 @@ finalize register_free:
     input r0 as ans_registrar_v6.aleo/register_free.future;
     await r0;
 
-
-
-
 function register_fld:
     input r0 as [u128; 4u32].private;
     input r1 as field.private;
@@ -90,9 +79,6 @@ finalize register_fld:
     input r0 as ans_registrar_v6.aleo/register_fld.future;
     await r0;
 
-
-
-
 function register_fld_public:
     input r0 as [u128; 4u32].private;
     input r1 as field.private;
@@ -106,9 +92,6 @@ function register_fld_public:
 finalize register_fld_public:
     input r0 as ans_registrar_v6.aleo/register_fld_public.future;
     await r0;
-
-
-
 
 function register_fld_with_coupon:
     input r0 as [u128; 4u32].private;
@@ -126,9 +109,6 @@ finalize register_fld_with_coupon:
     input r0 as ans_registrar_v6.aleo/register_fld_with_coupon.future;
     await r0;
 
-
-
-
 function register_fld_with_coupon_public:
     input r0 as [u128; 4u32].private;
     input r1 as field.private;
@@ -143,4 +123,3 @@ function register_fld_with_coupon_public:
 finalize register_fld_with_coupon_public:
     input r0 as ans_registrar_v6.aleo/register_fld_with_coupon_public.future;
     await r0;
-

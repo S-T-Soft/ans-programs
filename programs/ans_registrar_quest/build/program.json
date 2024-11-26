@@ -1,18 +1,6 @@
 {
-  "program": "ans_registrar_quest.aleo",
-  "version": "0.0.1",
-  "description": "",
-  "license": "MIT",
-  "dependencies": [
-    {
-      "name": "messenger.aleo",
-      "location": "local",
-      "path": "../messenger"
-    },
-    {
-      "name": "ans_registrar_v6.aleo",
-      "location": "local",
-      "path": "../ansregistrar"
-    }
-  ]
+    "program": "ans_registrar_quest.aleo",
+    "version": "0.0.0",
+    "description": "",
+    "license": "MIT"
 }

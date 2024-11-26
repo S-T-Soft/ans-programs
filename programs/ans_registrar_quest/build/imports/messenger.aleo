@@ -5,7 +5,6 @@ record Message:
     msg as [field; 8u32].private;
     sender as address.private;
 
-
 function send:
     input r0 as address.private;
     input r1 as [field; 8u32].private;
