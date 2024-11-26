@@ -1,9 +1,9 @@
 const FIELD_MODULUS = 8444461749428370424248824938781546531375899335154063827935233455917409239040n;
 
-function stringToBigInt(input) {
+function stringToBigInt(input, reverse = false) {
   const encoder = new TextEncoder();
   const encodedBytes = encoder.encode(input);
-  encodedBytes.reverse();
+  reverse && encodedBytes.reverse();
 
   let bigIntValue = BigInt(0);
   for (let i = 0; i < encodedBytes.length; i++) {
@@ -15,7 +15,7 @@ function stringToBigInt(input) {
   return bigIntValue;
 }
 
-function bigIntToString(bigIntValue) {
+function bigIntToString(bigIntValue, reverse = false) {
   const bytes = [];
   let tempBigInt = bigIntValue;
   while (tempBigInt > BigInt(0)) {
@@ -23,14 +23,14 @@ function bigIntToString(bigIntValue) {
     bytes.push(byteValue);
     tempBigInt = tempBigInt >> BigInt(8);
   }
-  bytes.reverse();
+  reverse && bytes.reverse();
   const decoder = new TextDecoder();
   const asciiString = decoder.decode(Uint8Array.from(bytes));
   return asciiString;
 }
 
 function stringToFields(input, numFieldElements = 4) {
-  const bigIntValue = stringToBigInt(input);
+  const bigIntValue = stringToBigInt(input, true);
   const fieldElements = [];
   let remainingValue = bigIntValue;
   for (let i = 0; i < numFieldElements; i++) {
@@ -51,7 +51,7 @@ function fieldsToString(fields) {
     bigIntValue += fieldElement * multiplier;
     multiplier *= FIELD_MODULUS;
   }
-  return bigIntToString(bigIntValue);
+  return bigIntToString(bigIntValue, true);
 }
 
 let text = process.argv[2];
