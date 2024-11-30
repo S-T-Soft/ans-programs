@@ -91,11 +91,11 @@ program ans_coupon_card.aleo {
             count: card.count - count
         };
         let key: field = BHP256::hash_to_field(card_owner);
-        let f: Future = finalize_transfer_private_to_public(key, count);
+        let f: Future = transfer_private_to_pub(key, count);
         return (remain_card, f);
     }
 
-    async function finalize_transfer_private_to_public (
+    async function transfer_private_to_pub (
         key: field,
         count: u64
     ) {
@@ -123,10 +123,10 @@ program ans_coupon_card.aleo {
             limit_name_length: limit_name_length,
             tld: tld,
             count: count
-        }, finalize_transfer_public_to_private(key, count));
+        }, transfer_public_to_priv(key, count));
     }
 
-    async function finalize_transfer_public_to_private (
+    async function transfer_public_to_priv (
         key: field,
         count: u64
     ) {
@@ -213,10 +213,10 @@ program ans_coupon_card.aleo {
             tld: tld
         };
         let key: field = BHP256::hash_to_field(card_owner);
-        return finalize_issue_coupon_card_public(self.caller, key, count);
+        return issue_coupon_card_pub(self.caller, key, count);
     }
 
-    async function finalize_issue_coupon_card_public(
+    async function issue_coupon_card_pub(
         caller: address,
         key: field,
         count: u64

@@ -452,7 +452,7 @@ program aleo_name_service_registry.aleo {
             is_view: true,
         };
         let transfer_private_to_public_future: Future =
-            finalize_transfer_private_to_public(
+            transfer_private_to_pub(
                 receiver, name_hash
             );
         return (
@@ -461,7 +461,7 @@ program aleo_name_service_registry.aleo {
         );
     }
 
-    async function finalize_transfer_private_to_public(
+    async function transfer_private_to_pub(
         public owner: address,
         public name_hash: field
     )
@@ -480,10 +480,10 @@ program aleo_name_service_registry.aleo {
             data: nft_data,
             edition: 0scalar
         };
-        return (nft, finalize_transfer_public_to_private(self.caller, name_hash));
+        return (nft, transfer_public_to_priv(self.caller, name_hash));
     }
 
-    async function finalize_transfer_public_to_private(
+    async function transfer_public_to_priv(
         public caller: address,
         public name_hash: field
     ) {

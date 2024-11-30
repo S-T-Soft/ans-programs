@@ -186,10 +186,10 @@ program ans_registrar.aleo {
         let (r, f): (credits.aleo/credits, Future) = credits.aleo/transfer_private_to_public(pay_record, self.address, price);
         let (n, f2): (aleo_name_service_registry.aleo/NFT, Future) = aleo_name_service_registry.aleo/register(name, parent, receiver, 0field);
         ans_coupon_card.aleo/use(card);
-        return finalize_register_fld_with_coupon(f, f2);
+        return register_fld_with_coup(f, f2);
     }
 
-    async function finalize_register_fld_with_coupon(f: Future, f2: Future) {
+    async function register_fld_with_coup(f: Future, f2: Future) {
         f.await();
         f2.await();
         // check minting flag
@@ -214,10 +214,10 @@ program ans_registrar.aleo {
         let f: Future = credits.aleo/transfer_public_as_signer(self.address, price);
         let (n, f2): (aleo_name_service_registry.aleo/NFT, Future) = aleo_name_service_registry.aleo/register(name, parent, receiver, 0field);
         ans_coupon_card.aleo/use(card);
-        return finalize_register_fld_with_coupon_public(f, f2);
+        return register_fld_with_coupon_pub(f, f2);
     }
 
-    async function finalize_register_fld_with_coupon_public(f: Future, f2: Future) {
+    async function register_fld_with_coupon_pub(f: Future, f2: Future) {
         f.await();
         f2.await();
         // check minting flag
