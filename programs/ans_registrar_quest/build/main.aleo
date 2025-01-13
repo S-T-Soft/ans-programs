@@ -1,20 +1,20 @@
 import messenger.aleo;
-import ans_utils_v2.aleo;
-import aleo_name_service_registry_v4.aleo;
-import ans_coupon_card_v3.aleo;
+import ans_utils.aleo;
+import aleo_name_service_registry.aleo;
+import ans_coupon_card.aleo;
 import credits.aleo;
-import multi_token_support_programv1.aleo;
-import mtsp_creditsv1.aleo;
-import pondo_oraclev1.aleo;
-import pondo_staked_aleo_tokenv1.aleo;
-import pondo_tokenv1.aleo;
-import pondo_delegator1v1.aleo;
-import pondo_delegator2v1.aleo;
-import pondo_delegator3v1.aleo;
-import pondo_delegator4v1.aleo;
-import pondo_delegator5v1.aleo;
-import pondo_core_protocolv1.aleo;
-import ans_registrar_v6.aleo;
+import token_registry.aleo;
+import wrapped_credits.aleo;
+import validator_oracle.aleo;
+import paleo_token.aleo;
+import pondo_protocol_token.aleo;
+import delegator1.aleo;
+import delegator2.aleo;
+import delegator3.aleo;
+import delegator4.aleo;
+import delegator5.aleo;
+import pondo_protocol.aleo;
+import ans_registrar.aleo;
 program ans_registrar_quest.aleo;
 
 struct NameStruct:
@@ -53,15 +53,15 @@ function register_free:
     input r0 as [u128; 4u32].private;
     input r1 as field.private;
     input r2 as address.private;
-    input r3 as ans_coupon_card_v3.aleo/CouponCard.record;
+    input r3 as ans_coupon_card.aleo/CouponCard.record;
     input r4 as [field; 8u32].private;
-    call ans_registrar_v6.aleo/register_free r0 r1 r2 r3 into r5;
-    call messenger.aleo/send aleo1sr8d93usu395zc29qcl35ul2e7hl2538hl8pehe4ms88q4g70gxq3ffw0v r4 into r6;
+    call ans_registrar.aleo/register_free r0 r1 r2 r3 into r5;
+    call messenger.aleo/send aleo1anscwvx9zhwm3yyzgef8c3nt36tmm0g4juhk4gxeavcwcz7t6v9qwnlue9 r4 into r6;
     async register_free r5 into r7;
     output r7 as ans_registrar_quest.aleo/register_free.future;
 
 finalize register_free:
-    input r0 as ans_registrar_v6.aleo/register_free.future;
+    input r0 as ans_registrar.aleo/register_free.future;
     await r0;
 
 function register_fld:
@@ -70,13 +70,13 @@ function register_fld:
     input r2 as address.private;
     input r3 as credits.aleo/credits.record;
     input r4 as [field; 8u32].private;
-    call ans_registrar_v6.aleo/register_fld r0 r1 r2 r3 into r5;
-    call messenger.aleo/send aleo1sr8d93usu395zc29qcl35ul2e7hl2538hl8pehe4ms88q4g70gxq3ffw0v r4 into r6;
+    call ans_registrar.aleo/register_fld r0 r1 r2 r3 into r5;
+    call messenger.aleo/send aleo1anscwvx9zhwm3yyzgef8c3nt36tmm0g4juhk4gxeavcwcz7t6v9qwnlue9 r4 into r6;
     async register_fld r5 into r7;
     output r7 as ans_registrar_quest.aleo/register_fld.future;
 
 finalize register_fld:
-    input r0 as ans_registrar_v6.aleo/register_fld.future;
+    input r0 as ans_registrar.aleo/register_fld.future;
     await r0;
 
 function register_fld_public:
@@ -84,13 +84,13 @@ function register_fld_public:
     input r1 as field.private;
     input r2 as address.private;
     input r3 as [field; 8u32].private;
-    call ans_registrar_v6.aleo/register_fld_public r0 r1 r2 into r4;
-    call messenger.aleo/send aleo1sr8d93usu395zc29qcl35ul2e7hl2538hl8pehe4ms88q4g70gxq3ffw0v r3 into r5;
+    call ans_registrar.aleo/register_fld_public r0 r1 r2 into r4;
+    call messenger.aleo/send aleo1anscwvx9zhwm3yyzgef8c3nt36tmm0g4juhk4gxeavcwcz7t6v9qwnlue9 r3 into r5;
     async register_fld_public r4 into r6;
     output r6 as ans_registrar_quest.aleo/register_fld_public.future;
 
 finalize register_fld_public:
-    input r0 as ans_registrar_v6.aleo/register_fld_public.future;
+    input r0 as ans_registrar.aleo/register_fld_public.future;
     await r0;
 
 function register_fld_with_coupon:
@@ -98,28 +98,28 @@ function register_fld_with_coupon:
     input r1 as field.private;
     input r2 as address.private;
     input r3 as credits.aleo/credits.record;
-    input r4 as ans_coupon_card_v3.aleo/CouponCard.record;
+    input r4 as ans_coupon_card.aleo/CouponCard.record;
     input r5 as [field; 8u32].private;
-    call ans_registrar_v6.aleo/register_fld_with_coupon r0 r1 r2 r3 r4 into r6;
-    call messenger.aleo/send aleo1sr8d93usu395zc29qcl35ul2e7hl2538hl8pehe4ms88q4g70gxq3ffw0v r5 into r7;
+    call ans_registrar.aleo/register_fld_with_coupon r0 r1 r2 r3 r4 into r6;
+    call messenger.aleo/send aleo1anscwvx9zhwm3yyzgef8c3nt36tmm0g4juhk4gxeavcwcz7t6v9qwnlue9 r5 into r7;
     async register_fld_with_coupon r6 into r8;
     output r8 as ans_registrar_quest.aleo/register_fld_with_coupon.future;
 
 finalize register_fld_with_coupon:
-    input r0 as ans_registrar_v6.aleo/register_fld_with_coupon.future;
+    input r0 as ans_registrar.aleo/register_fld_with_coupon.future;
     await r0;
 
 function register_fld_with_coupon_public:
     input r0 as [u128; 4u32].private;
     input r1 as field.private;
     input r2 as address.private;
-    input r3 as ans_coupon_card_v3.aleo/CouponCard.record;
+    input r3 as ans_coupon_card.aleo/CouponCard.record;
     input r4 as [field; 8u32].private;
-    call ans_registrar_v6.aleo/register_fld_with_coupon_public r0 r1 r2 r3 into r5;
-    call messenger.aleo/send aleo1sr8d93usu395zc29qcl35ul2e7hl2538hl8pehe4ms88q4g70gxq3ffw0v r4 into r6;
+    call ans_registrar.aleo/register_fld_with_coupon_public r0 r1 r2 r3 into r5;
+    call messenger.aleo/send aleo1anscwvx9zhwm3yyzgef8c3nt36tmm0g4juhk4gxeavcwcz7t6v9qwnlue9 r4 into r6;
     async register_fld_with_coupon_public r5 into r7;
     output r7 as ans_registrar_quest.aleo/register_fld_with_coupon_public.future;
 
 finalize register_fld_with_coupon_public:
-    input r0 as ans_registrar_v6.aleo/register_fld_with_coupon_public.future;
+    input r0 as ans_registrar.aleo/register_fld_with_coupon_public.future;
     await r0;

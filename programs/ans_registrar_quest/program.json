@@ -6,13 +6,13 @@
   "dependencies": [
     {
       "name": "messenger.aleo",
-      "location": "local",
-      "path": "../messenger"
+      "location": "network",
+      "network": "mainnet"
     },
     {
-      "name": "ans_registrar_v6.aleo",
-      "location": "local",
-      "path": "../ansregistrar"
+      "name": "ans_registrar.aleo",
+      "location": "network",
+      "network": "mainnet"
     }
   ]
 }
