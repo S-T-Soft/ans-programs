@@ -20,28 +20,24 @@ if [[ ! -f ${env}.env ]]; then
   exit 1
 fi
 
-root=$(pwd)
-env_file="${root}/${env}.env"
-source $env_file
+source ${env}.env
 
 cd ../programs/ansregistrar || exit
 
 echo "NETWORK=${NETWORK}
-PRIVATE_KEY=${PRIVATE_KEY}" > .env
+PRIVATE_KEY=${PRIVATE_KEY}
+ENDPOINT=${ENDPOINT}" > .env
 
 program=`jq -r '.program' program.json`
 
 echo -e "Initialize \033[32m${program}\033[0m in \033[32m${env}\033[0m"
 
 if [[ -z "${FEE_RECORD}" ]]; then
-  output=$(snarkos developer execute --private-key "${PRIVATE_KEY}" --query "${ENDPOINT}" \
-   --broadcast "${ENDPOINT}/testnet3/transaction/broadcast" \
-   ${program} initialize_registrar)
+  output=$(leo execute -b --private-key "${PRIVATE_KEY}" \
+   -p "${program%.aleo}" --network "${NETWORK}" initialize_registrar)
 else
-  output=$(snarkos developer execute --private-key "${PRIVATE_KEY}" --query "${ENDPOINT}" \
-   --broadcast "${ENDPOINT}/testnet3/transaction/broadcast" \
-   --record "${FEE_RECORD}" \
-   ${program} initialize_registrar)
+  output=$(leo execute -b --private-key "${PRIVATE_KEY}" --record "${FEE_RECORD}" \
+   -p "${program%.aleo}" --network "${NETWORK}" initialize_registrar)
 fi
 
 echo "${output}"

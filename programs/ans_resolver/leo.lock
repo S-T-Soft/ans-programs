@@ -1,0 +1,13 @@
+[[package]]
+name = "ans_utils.aleo"
+location = "local"
+path = "/Users/snowtiger/PycharmProjects/ans-programs/programs/ans_resolver/../registry/../ans_utils"
+checksum = "b6ec64d76a152344874759afc81f170a2e341ef1d043d761b070e2f3815751c3"
+dependencies = []
+
+[[package]]
+name = "aleo_name_service_registry.aleo"
+location = "local"
+path = "/Users/snowtiger/PycharmProjects/ans-programs/programs/ans_resolver/../registry"
+checksum = "5c262c29ad3d39971d62ba3f48795814be22371c46df48b6f6cea3d567256657"
+dependencies = ["ans_utils.aleo"]

@@ -1,0 +1,13 @@
+{
+    "program": "ans_resolver.aleo",
+    "version": "0.0.0",
+    "description": "",
+    "license": "MIT",
+    "dependencies": [
+        {
+          "name": "aleo_name_service_registry.aleo",
+          "location": "local",
+          "path": "../registry"
+        }
+    ]
+}

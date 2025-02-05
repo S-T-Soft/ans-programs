@@ -4,7 +4,7 @@ env="dev"
 
 # tld ans
 name=""
-parent="3601410589032411677092457044111621862970800028849492457114786804129430260029field"
+parent="559532657689873513833888656958509165446284001025178663602770230581478239512field"
 
 for arg in "$@"; do
   case $arg in
@@ -42,14 +42,11 @@ program=`jq -r '.program' ../programs/ansregistrar/program.json`
 echo -e "Register \033[32m${name}.ans\033[0m from \033[32m${program}\033[0m in \033[32m${env}\033[0m"
 
 if [[ -z "${FEE_RECORD}" ]]; then
-  output=$(snarkos developer execute --private-key "${PRIVATE_KEY}" --query "${ENDPOINT}" \
-           --broadcast "${ENDPOINT}/testnet3/transaction/broadcast" \
-           ${program} register_fld "${name_arr}" "${parent}" "${ADDRESS}" "${RECORD}")
+  output=$(leo execute -b --private-key "${PRIVATE_KEY}" --endpoint "${ENDPOINT}" \
+           -p "${program%.aleo}" --network "${NETWORK}" register_fld "${name_arr}" "${parent}" "${ADDRESS}" "${RECORD}")
 else
-  output=$(snarkos developer execute --private-key "${PRIVATE_KEY}" --query "${ENDPOINT}" \
-           --record "${FEE_RECORD}" \
-           --broadcast "${ENDPOINT}/testnet3/transaction/broadcast" \
-           ${program} register_fld "${name_arr}" "${parent}" "${ADDRESS}" "${RECORD}")
+  output=$(leo execute -b --private-key "${PRIVATE_KEY}" --endpoint "${ENDPOINT}" --record "${FEE_RECORD}" \
+           -p "${program%.aleo}" --network "${NETWORK}" register_fld "${name_arr}" "${parent}" "${ADDRESS}" "${RECORD}")
 fi
 
 echo "${output}"

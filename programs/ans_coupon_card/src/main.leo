@@ -1,109 +1,240 @@
 // The 'ans_coupon_card' program.
-program ans_coupon_card_v1.aleo {
+program ans_coupon_card.aleo {
+    const ADMIN_ADDR: address = aleo1ans8gd200s2yyrx72y7txgee5snq6v6la8wa3r8r0ups4l2hjv9qku8k6k;
+
     record CouponCard {
         owner: address,
         // 1 means register price is: origin_price * 0.01
+        discount_percent: u8,
+        limit_name_length: u8,
+        tld: field,
+        count: u64
+    }
+
+    struct CardOwner {
+        account: address,
         discount_percent: u8,
         limit_name_length: u8,
         tld: field
     }
 
     // 0 admin
-    // 1 coinbase issue address
-    // 2 max issue coinbase card
-    // 3 current issued coinbase card
-    mapping general_settings: u8 => u128;
+    mapping admins: u8 => address;
 
-    mapping cb_uuids: u128 => bool;
-    mapping cb_address: u128 => bool;
+    // address holding cards
+    mapping cards: field => u64;
 
-    transition initialize() {
-        let admin: u128 = BHP256::hash_to_u128(self.caller);
-        return then finalize(admin);
+    async transition initialize() -> Future {
+        return finalize_initialize();
     }
 
-    finalize initialize(
-        admin: u128
-    ) {
-        general_settings.set(0u8, admin);
+    async function finalize_initialize() {
+        let current_admin: address = admins.get_or_use(0u8, self.address);
+        assert_eq(current_admin, self.address);
+
+        admins.set(0u8, ADMIN_ADDR);
     }
 
-    transition set_setting(
-        private key: u8,
-        private value: u128
-    ) {
-        let hash_caller: u128 = BHP256::hash_to_u128(self.caller);
-        return then finalize(hash_caller, key, value);
+    async transition set_admin(
+        admin: address
+    ) -> Future {
+        return finalize_set_admin(self.caller, admin);
     }
 
-    finalize set_setting(
-        public hash_caller: u128,
-        public key: u8,
-        public value: u128
+    async function finalize_set_admin(
+        public caller: address,
+        public admin: address,
     ) {
         // check admin
-        assert_eq(hash_caller, general_settings.get(0u8));
-        general_settings.set(key, value);
+        assert_eq(admins.get(0u8), caller);
+        admins.set(0u8, admin);
     }
 
-    // issue a coupon card
-    transition issue_coupon_card(
+    transition transfer_private(
+        card: CouponCard,
+        receiver: address,
+        count: u64
+    ) -> (CouponCard, CouponCard) {
+        let new_card: CouponCard = CouponCard {
+            owner: receiver,
+            discount_percent: card.discount_percent,
+            limit_name_length: card.limit_name_length,
+            tld: card.tld,
+            count: count
+        };
+        let remain_card: CouponCard = CouponCard {
+            owner: card.owner,
+            discount_percent: card.discount_percent,
+            limit_name_length: card.limit_name_length,
+            tld: card.tld,
+            count: card.count - count
+        };
+        return (new_card, remain_card);
+    }
+å
+    async transition transfer_private_to_public(
+        card: CouponCard,
+        public receiver: address,
+        count: u64
+    ) -> (CouponCard, Future) {
+        let card_owner: CardOwner = CardOwner {
+            account: receiver,
+            discount_percent: card.discount_percent,
+            limit_name_length: card.limit_name_length,
+            tld: card.tld
+        };
+        let remain_card: CouponCard = CouponCard {
+            owner: card.owner,
+            discount_percent: card.discount_percent,
+            limit_name_length: card.limit_name_length,
+            tld: card.tld,
+            count: card.count - count
+        };
+        let key: field = BHP256::hash_to_field(card_owner);
+        let f: Future = transfer_private_to_pub(key, count);
+        return (remain_card, f);
+    }
+
+    async function transfer_private_to_pub (
+        key: field,
+        count: u64
+    ) {
+        let current_count: u64 = cards.get_or_use(key, 0u64);
+        cards.set(key, current_count + count);
+    }
+
+    async transition transfer_public_to_private (
         receiver: address,
         discount_percent: u8,
         limit_name_length: u8,
-        tld: field
-    ) -> CouponCard {
-        assert(discount_percent <= 100u8);
-        let card: CouponCard = CouponCard{
-            owner: receiver,
+        tld: field,
+        count: u64
+    ) -> (CouponCard, Future) {
+        let card_owner: CardOwner = CardOwner {
+            account: self.caller,
             discount_percent: discount_percent,
             limit_name_length: limit_name_length,
             tld: tld
         };
-        let hash_caller: u128 = BHP256::hash_to_u128(self.caller);
-        return card then finalize(hash_caller);
+        let key: field = BHP256::hash_to_field(card_owner);
+        return (CouponCard {
+            owner: receiver,
+            discount_percent: discount_percent,
+            limit_name_length: limit_name_length,
+            tld: tld,
+            count: count
+        }, transfer_public_to_priv(key, count));
     }
 
-    finalize issue_coupon_card(
-        hash_caller: u128
+    async function transfer_public_to_priv (
+        key: field,
+        count: u64
     ) {
-        // check admin
-        assert_eq(hash_caller, general_settings.get(0u8));
+        let current_count: u64 = cards.get(key);
+        assert(current_count >= count);
+        cards.set(key, current_count - count);
+    }
+
+    async transition transfer_public(
+        receiver: address,
+        discount_percent: u8,
+        limit_name_length: u8,
+        tld: field,
+        count: u64
+    ) -> Future {
+        let card_owner: CardOwner = CardOwner {
+            account: self.caller,
+            discount_percent: discount_percent,
+            limit_name_length: limit_name_length,
+            tld: tld
+        };
+        let key: field = BHP256::hash_to_field(card_owner);
+        let to_card_owner: CardOwner = CardOwner {
+            account: receiver,
+            discount_percent: discount_percent,
+            limit_name_length: limit_name_length,
+            tld: tld
+        };
+        let to_key: field = BHP256::hash_to_field(to_card_owner);
+        return finalize_transfer_public(key, to_key, count);
+    }
+
+    async function finalize_transfer_public(
+        key: field,
+        to_key: field,
+        count: u64
+    ) {
+        let current_count: u64 = cards.get(key);
+        assert(current_count >= count);
+        cards.set(key, current_count - count);
+        let to_current_count: u64 = cards.get_or_use(to_key, 0u64);
+        cards.set(to_key, to_current_count + count);
     }
 
     // issue a coupon card
-    transition issue_coupon_card_cb(
+    async transition issue_coupon_card(
         receiver: address,
-        cb_uuid: [u128; 4]
-    ) -> CouponCard {
-        let card: CouponCard = CouponCard {
+        discount_percent: u8,
+        limit_name_length: u8,
+        tld: field,
+        count: u64
+    ) -> (CouponCard, Future) {
+        assert(discount_percent < 100u8);
+        let card: CouponCard = CouponCard{
             owner: receiver,
-            discount_percent: 0u8,
-            limit_name_length: 5u8,
-            // .anon
-            tld: 3429962289057708737616101644642461578953781498069508461288569895276398934019field
+            discount_percent: discount_percent,
+            limit_name_length: limit_name_length,
+            tld: tld,
+            count: count
         };
-        let hash_receiver: u128 = BHP256::hash_to_u128(receiver);
-        let hash_cb_uuid: u128 = BHP256::hash_to_u128(cb_uuid);
-        let hash_caller: u128 = BHP256::hash_to_u128(self.caller);
-        return card then finalize(hash_caller, hash_receiver, hash_cb_uuid);
+        return (card, finalize_issue_coupon_card(self.caller));
     }
 
-    finalize issue_coupon_card_cb(
-        hash_caller: u128,
-        hash_receiver: u128,
-        hash_cb_uuid: u128
+    async function finalize_issue_coupon_card(
+        caller: address
     ) {
         // check admin
-        assert_eq(hash_caller, general_settings.get(1u8));
-        assert_eq(cb_uuids.contains(hash_cb_uuid), false);
-        assert_eq(cb_address.contains(hash_receiver), false);
-        let current_issued: u128 = general_settings.get(3u8);
-        assert(general_settings.get(2u8) > current_issued);
-        cb_uuids.set(hash_cb_uuid, true);
-        cb_address.set(hash_receiver, true);
-        general_settings.set(3u8, current_issued + 1u128);
+        assert_eq(admins.get(0u8), caller);
     }
 
-    transition use(card: CouponCard) {}
+    // issue some public coupon cards
+    async transition issue_coupon_card_public(
+        receiver: address,
+        discount_percent: u8,
+        limit_name_length: u8,
+        tld: field,
+        count: u64
+    ) -> Future {
+        assert(discount_percent < 100u8);
+        let card_owner: CardOwner = CardOwner {
+            account: receiver,
+            discount_percent: discount_percent,
+            limit_name_length: limit_name_length,
+            tld: tld
+        };
+        let key: field = BHP256::hash_to_field(card_owner);
+        return issue_coupon_card_pub(self.caller, key, count);
+    }
+
+    async function issue_coupon_card_pub(
+        caller: address,
+        key: field,
+        count: u64
+    ) {
+        // check admin
+        assert_eq(admins.get(0u8), caller);
+        let current_count: u64 = cards.get_or_use(key, 0u64);
+        cards.set(key, current_count + count);
+    }
+
+    transition use(card: CouponCard) -> CouponCard {
+        assert(card.count > 0u64);
+        return CouponCard {
+            owner: card.owner,
+            discount_percent: card.discount_percent,
+            limit_name_length: card.limit_name_length,
+            tld: card.tld,
+            count: card.count - 1u64
+        };
+    }
 }
