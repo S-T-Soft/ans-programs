@@ -82,10 +82,10 @@ program ans_resolver_v4.aleo {
         assert(category > 0u128);
         // ensure the content is not empty
         assert(content[0u8] > 0u128);
-        return finalize_set_resolver_record_public(name_hash, category, content, self.caller);
+        return set_resolver_record_public_f(name_hash, category, content, self.caller);
     }
 
-    async function finalize_set_resolver_record_public(
+    async function set_resolver_record_public_f(
         name_hash: field,
         category: u128,
         content: [u128; 8],
@@ -105,11 +105,11 @@ program ans_resolver_v4.aleo {
         name_hash: field,
         category: u128
     ) -> Future {
-        return finalize_unset_resolver_record_public(name_hash, category, self.caller);
+        return unset_resolver_record_public_f(name_hash, category, self.caller);
     }
 
     // increase the version of the resolver, so the resolver record will be expired
-    async function finalize_unset_resolver_record_public(
+    async function unset_resolver_record_public_f(
         name_hash: field,
         category: u128,
         owner: address,

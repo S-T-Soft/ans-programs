@@ -1,5 +1,5 @@
 {
-  "program": "ans_registrar_quest.aleo",
+  "program": "ans_registrar_quest_2.aleo",
   "version": "0.0.1",
   "description": "",
   "license": "MIT",
@@ -10,9 +10,9 @@
       "path": "../messenger"
     },
     {
-      "name": "ans_registrar_v6.aleo",
+      "name": "ans_resolver_v4.aleo",
       "location": "local",
-      "path": "../ansregistrar"
+      "path": "../ans_resolver"
     }
   ]
 }

@@ -15,12 +15,7 @@
       "network": "testnet"
     },
     {
-      "name": "pondo_core_protocolv1.aleo",
-      "location": "network",
-      "network": "testnet"
-    },
-    {
-      "name": "aleo_name_service_registry.aleo",
+      "name": "aleo_name_service_registry_v4.aleo",
       "location": "local",
       "path": "../registry"
     }

@@ -1,0 +1,111 @@
+[[package]]
+name = "ans_utils_v2.aleo"
+location = "local"
+path = "/Users/snowtiger/PycharmProjects/ans-programs/programs/ans_registrar_quest_1/../ans_registrar_usd/../registry/../ans_utils"
+checksum = "fdc7563a0898407162147e8e54d16582ef7dedf9c9b128559a96c1ec3d54e2ab"
+dependencies = []
+
+[[package]]
+name = "aleo_name_service_registry_v4.aleo"
+location = "local"
+path = "/Users/snowtiger/PycharmProjects/ans-programs/programs/ans_registrar_quest_1/../ans_registrar_usd/../registry"
+checksum = "617726a4d384edf7e33fbae7de42ae96cf4577d0940daf27c11f8e17d56c3782"
+dependencies = ["ans_utils_v2.aleo"]
+
+[[package]]
+name = "credits.aleo"
+network = "testnet"
+location = "network"
+checksum = "e185a49fba7f5e477c3fedf8968be9912ae7d8db34531c246041e899175e4d33"
+dependencies = []
+
+[[package]]
+name = "multi_token_support_programv1.aleo"
+network = "testnet"
+location = "network"
+checksum = "2c9da2a20e6324f093435a40e00bc8114c5b7952cb4262ae0462cb90f817546e"
+dependencies = ["credits.aleo"]
+
+[[package]]
+name = "mtsp_creditsv1.aleo"
+network = "testnet"
+location = "network"
+checksum = "d782478b16aa20d6e09372acba927f0e5f12476bba2bd792e33f1952326cff8b"
+dependencies = ["credits.aleo", "multi_token_support_programv1.aleo"]
+
+[[package]]
+name = "pondo_oraclev1.aleo"
+network = "testnet"
+location = "network"
+checksum = "4726db7d2db36d1da6121d95291ed96c56881ca5d2e7d5526c1338412a2bbdee"
+dependencies = ["credits.aleo"]
+
+[[package]]
+name = "pondo_staked_aleo_tokenv1.aleo"
+network = "testnet"
+location = "network"
+checksum = "a79b7aa2d726fc0b714bd728cd395a7b159c00c345677f1c5e563dea1a6a0f3d"
+dependencies = ["credits.aleo", "multi_token_support_programv1.aleo"]
+
+[[package]]
+name = "pondo_tokenv1.aleo"
+network = "testnet"
+location = "network"
+checksum = "30a8a58a6f2a5599bd74d629bbfe7c6abe32a38dcde477ccfa996c708c856260"
+dependencies = ["credits.aleo", "multi_token_support_programv1.aleo"]
+
+[[package]]
+name = "pondo_delegator1v1.aleo"
+network = "testnet"
+location = "network"
+checksum = "ee3cf0d39dd72aa4e9014467c437f8ef0153da8e6ea5e82461f626c95fcc0508"
+dependencies = ["credits.aleo", "pondo_oraclev1.aleo"]
+
+[[package]]
+name = "pondo_delegator2v1.aleo"
+network = "testnet"
+location = "network"
+checksum = "807d06ad396cceaa92ec333224de4021b207e6c730df4b268cb08e2cae59cee8"
+dependencies = ["credits.aleo", "pondo_oraclev1.aleo"]
+
+[[package]]
+name = "pondo_delegator3v1.aleo"
+network = "testnet"
+location = "network"
+checksum = "cfb3a9f7227b80925b75da521e2864d1e82bcd4117229e68d85622650f3f9d69"
+dependencies = ["credits.aleo", "pondo_oraclev1.aleo"]
+
+[[package]]
+name = "pondo_delegator4v1.aleo"
+network = "testnet"
+location = "network"
+checksum = "ffbabeb944ed1dc066442d609bfabdf7004eb9bbb866add4bee98986d862ade1"
+dependencies = ["credits.aleo", "pondo_oraclev1.aleo"]
+
+[[package]]
+name = "pondo_delegator5v1.aleo"
+network = "testnet"
+location = "network"
+checksum = "c1640c0a3ba05737257b2090134954f60967b015a2b640bf60d4f583875dc25f"
+dependencies = ["credits.aleo", "pondo_oraclev1.aleo"]
+
+[[package]]
+name = "pondo_core_protocolv1.aleo"
+network = "testnet"
+location = "network"
+checksum = "6af8e2256041d75d0c648d5a2b79076e9c3328a24e227e12bacb9986e01ba506"
+dependencies = ["credits.aleo", "multi_token_support_programv1.aleo", "mtsp_creditsv1.aleo", "pondo_oraclev1.aleo", "pondo_staked_aleo_tokenv1.aleo", "pondo_tokenv1.aleo", "pondo_delegator1v1.aleo", "pondo_delegator2v1.aleo", "pondo_delegator3v1.aleo", "pondo_delegator4v1.aleo", "pondo_delegator5v1.aleo"]
+
+[[package]]
+name = "ans_coupon_card_v3.aleo"
+location = "local"
+path = "/Users/snowtiger/PycharmProjects/ans-programs/programs/ans_registrar_quest_1/../ans_registrar_usd/../ans_coupon_card"
+checksum = "2f7481ae127275146e0e03507abf39856801809263d890bf01a81b966f1c19d5"
+dependencies = []
+
+[[package]]
+name = "official_oracle_v2.aleo"
+network = "testnet"
+location = "network"
+checksum = "ed144cd6f52a37f3f5817adf6364890e786e9b0179323cf3f0cc26182b1944ba"
+dependencies = []
