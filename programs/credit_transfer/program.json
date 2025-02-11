@@ -10,17 +10,12 @@
       "network": "testnet"
     },
     {
-      "name": "token_registry.aleo",
+      "name": "multi_token_support_programv1.aleo",
       "location": "network",
       "network": "testnet"
     },
     {
-      "name": "pondo_protocol.aleo",
-      "location": "network",
-      "network": "testnet"
-    },
-    {
-      "name": "aleo_name_service_registry.aleo",
+      "name": "aleo_name_service_registry_v4.aleo",
       "location": "local",
       "path": "../registry"
     }

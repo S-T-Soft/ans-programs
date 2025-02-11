@@ -1,4 +1,4 @@
-program ans_utils.aleo;
+program ans_utils_v2.aleo;
 
 function validate_name:
     input r0 as [u128; 4u32].private;

@@ -1,4 +1,11 @@
 [[package]]
+name = "messenger.aleo"
+location = "local"
+path = "/Users/snowtiger/PycharmProjects/ans-programs/programs/ans_registrar_quest_2/../messenger"
+checksum = "8b5ff54613e80dfee56cad8e2b11fc92f50713147e61640a1f2d3ecef3150d68"
+dependencies = []
+
+[[package]]
 name = "ans_utils_v2.aleo"
 location = "local"
 path = "/Users/snowtiger/PycharmProjects/ans-programs/programs/ans_registrar_quest_2/../ans_resolver/../registry/../ans_utils"
@@ -11,3 +18,10 @@ location = "local"
 path = "/Users/snowtiger/PycharmProjects/ans-programs/programs/ans_registrar_quest_2/../ans_resolver/../registry"
 checksum = "617726a4d384edf7e33fbae7de42ae96cf4577d0940daf27c11f8e17d56c3782"
 dependencies = ["ans_utils_v2.aleo"]
+
+[[package]]
+name = "ans_resolver_v4.aleo"
+location = "local"
+path = "/Users/snowtiger/PycharmProjects/ans-programs/programs/ans_registrar_quest_2/../ans_resolver"
+checksum = "402c79e672d0272921d138e3816d3f1b2689c87d89ec6a83e53ec2db6078de78"
+dependencies = ["aleo_name_service_registry_v4.aleo"]
