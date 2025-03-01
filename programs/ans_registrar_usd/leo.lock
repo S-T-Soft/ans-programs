@@ -1,111 +1,111 @@
 [[package]]
-name = "ans_utils_v2.aleo"
+name = "ans_utils.aleo"
 location = "local"
-path = "/Users/snowtiger/PycharmProjects/ans-programs/programs/ans_registrar_quest_1/../ans_registrar_usd/../registry/../ans_utils"
-checksum = "fdc7563a0898407162147e8e54d16582ef7dedf9c9b128559a96c1ec3d54e2ab"
+path = "/Users/snowtiger/PycharmProjects/ans-programs/programs/ans_registrar_usd/../registry/../ans_utils"
+checksum = "f85eea834da58bb0c4ed2d24dde9c5c523f1612fe137c3c7791cbb5ee01fc1b8"
 dependencies = []
 
 [[package]]
-name = "aleo_name_service_registry_v4.aleo"
+name = "aleo_name_service_registry.aleo"
 location = "local"
-path = "/Users/snowtiger/PycharmProjects/ans-programs/programs/ans_registrar_quest_1/../ans_registrar_usd/../registry"
-checksum = "617726a4d384edf7e33fbae7de42ae96cf4577d0940daf27c11f8e17d56c3782"
-dependencies = ["ans_utils_v2.aleo"]
+path = "/Users/snowtiger/PycharmProjects/ans-programs/programs/ans_registrar_usd/../registry"
+checksum = "a40f84c0c5125b5587bcacf75f2dc460512e046a520260dbc6a6e95f85db484a"
+dependencies = ["ans_utils.aleo"]
+
+[[package]]
+name = "ans_coupon_card.aleo"
+location = "local"
+path = "/Users/snowtiger/PycharmProjects/ans-programs/programs/ans_registrar_usd/../ans_coupon_card"
+checksum = "3bb180711161d4a9f0e3b885eae7839a8f57f2b2e48affcfea3757d9e01e291c"
+dependencies = []
 
 [[package]]
 name = "credits.aleo"
-network = "testnet"
+network = "mainnet"
 location = "network"
 checksum = "e185a49fba7f5e477c3fedf8968be9912ae7d8db34531c246041e899175e4d33"
 dependencies = []
 
 [[package]]
-name = "multi_token_support_programv1.aleo"
-network = "testnet"
+name = "token_registry.aleo"
+network = "mainnet"
 location = "network"
-checksum = "2c9da2a20e6324f093435a40e00bc8114c5b7952cb4262ae0462cb90f817546e"
+checksum = "d799ce57446bce0fc761722244c03f2c462f8f4db945e804a834e8409db5c203"
 dependencies = ["credits.aleo"]
 
 [[package]]
-name = "mtsp_creditsv1.aleo"
-network = "testnet"
+name = "wrapped_credits.aleo"
+network = "mainnet"
 location = "network"
-checksum = "d782478b16aa20d6e09372acba927f0e5f12476bba2bd792e33f1952326cff8b"
-dependencies = ["credits.aleo", "multi_token_support_programv1.aleo"]
+checksum = "ded3b67c4c905f1f0f821411edc055603790f5c8f9a7865aff6c97611c034933"
+dependencies = ["credits.aleo", "token_registry.aleo"]
 
 [[package]]
-name = "pondo_oraclev1.aleo"
-network = "testnet"
+name = "validator_oracle.aleo"
+network = "mainnet"
 location = "network"
-checksum = "4726db7d2db36d1da6121d95291ed96c56881ca5d2e7d5526c1338412a2bbdee"
+checksum = "ee747d8c8ca543f915c6e8b46de55f039640fc4c4646017cf8774075c17f2030"
 dependencies = ["credits.aleo"]
 
 [[package]]
-name = "pondo_staked_aleo_tokenv1.aleo"
-network = "testnet"
+name = "paleo_token.aleo"
+network = "mainnet"
 location = "network"
-checksum = "a79b7aa2d726fc0b714bd728cd395a7b159c00c345677f1c5e563dea1a6a0f3d"
-dependencies = ["credits.aleo", "multi_token_support_programv1.aleo"]
+checksum = "5e2165178b0a65ba58896d0759ec407b13e5cb503831bcc62ade4f6641a4ce2f"
+dependencies = ["credits.aleo", "token_registry.aleo"]
 
 [[package]]
-name = "pondo_tokenv1.aleo"
-network = "testnet"
+name = "pondo_protocol_token.aleo"
+network = "mainnet"
 location = "network"
-checksum = "30a8a58a6f2a5599bd74d629bbfe7c6abe32a38dcde477ccfa996c708c856260"
-dependencies = ["credits.aleo", "multi_token_support_programv1.aleo"]
+checksum = "c8dbc3537656960509e32c60f12d376e740efd7e7e24aa6fcf959c835f4f4f8f"
+dependencies = ["credits.aleo", "token_registry.aleo"]
 
 [[package]]
-name = "pondo_delegator1v1.aleo"
-network = "testnet"
+name = "delegator1.aleo"
+network = "mainnet"
 location = "network"
-checksum = "ee3cf0d39dd72aa4e9014467c437f8ef0153da8e6ea5e82461f626c95fcc0508"
-dependencies = ["credits.aleo", "pondo_oraclev1.aleo"]
+checksum = "963d64670cbe43736dd993c5948d5d25bfe99514a2f622f9b21b9649e70ac187"
+dependencies = ["credits.aleo", "validator_oracle.aleo"]
 
 [[package]]
-name = "pondo_delegator2v1.aleo"
-network = "testnet"
+name = "delegator2.aleo"
+network = "mainnet"
 location = "network"
-checksum = "807d06ad396cceaa92ec333224de4021b207e6c730df4b268cb08e2cae59cee8"
-dependencies = ["credits.aleo", "pondo_oraclev1.aleo"]
+checksum = "3bd40eb8a6f1c4f8930ced8f9ff26d46c79248613934004d09bea146186b0db4"
+dependencies = ["credits.aleo", "validator_oracle.aleo"]
 
 [[package]]
-name = "pondo_delegator3v1.aleo"
-network = "testnet"
+name = "delegator3.aleo"
+network = "mainnet"
 location = "network"
-checksum = "cfb3a9f7227b80925b75da521e2864d1e82bcd4117229e68d85622650f3f9d69"
-dependencies = ["credits.aleo", "pondo_oraclev1.aleo"]
+checksum = "e7466ce1ae87476036980acb0604afa686a972d4ed5e39b63762f040246bc614"
+dependencies = ["credits.aleo", "validator_oracle.aleo"]
 
 [[package]]
-name = "pondo_delegator4v1.aleo"
-network = "testnet"
+name = "delegator4.aleo"
+network = "mainnet"
 location = "network"
-checksum = "ffbabeb944ed1dc066442d609bfabdf7004eb9bbb866add4bee98986d862ade1"
-dependencies = ["credits.aleo", "pondo_oraclev1.aleo"]
+checksum = "94118037e5060e625f8164bb9c1207090c7b267b281aa843b1e758b39f7a3a71"
+dependencies = ["credits.aleo", "validator_oracle.aleo"]
 
 [[package]]
-name = "pondo_delegator5v1.aleo"
-network = "testnet"
+name = "delegator5.aleo"
+network = "mainnet"
 location = "network"
-checksum = "c1640c0a3ba05737257b2090134954f60967b015a2b640bf60d4f583875dc25f"
-dependencies = ["credits.aleo", "pondo_oraclev1.aleo"]
+checksum = "23e3be0b49776fa71ecd37140f68af02c62f8cda48a3e6eb7c846156a3624368"
+dependencies = ["credits.aleo", "validator_oracle.aleo"]
 
 [[package]]
-name = "pondo_core_protocolv1.aleo"
-network = "testnet"
+name = "pondo_protocol.aleo"
+network = "mainnet"
 location = "network"
-checksum = "6af8e2256041d75d0c648d5a2b79076e9c3328a24e227e12bacb9986e01ba506"
-dependencies = ["credits.aleo", "multi_token_support_programv1.aleo", "mtsp_creditsv1.aleo", "pondo_oraclev1.aleo", "pondo_staked_aleo_tokenv1.aleo", "pondo_tokenv1.aleo", "pondo_delegator1v1.aleo", "pondo_delegator2v1.aleo", "pondo_delegator3v1.aleo", "pondo_delegator4v1.aleo", "pondo_delegator5v1.aleo"]
+checksum = "7fa10266bb80039541efcab23febf1e7f8e2e14a2993039a756d2ebfd059b88b"
+dependencies = ["credits.aleo", "token_registry.aleo", "wrapped_credits.aleo", "validator_oracle.aleo", "paleo_token.aleo", "pondo_protocol_token.aleo", "delegator1.aleo", "delegator2.aleo", "delegator3.aleo", "delegator4.aleo", "delegator5.aleo"]
 
 [[package]]
-name = "ans_coupon_card_v3.aleo"
-location = "local"
-path = "/Users/snowtiger/PycharmProjects/ans-programs/programs/ans_registrar_quest_1/../ans_registrar_usd/../ans_coupon_card"
-checksum = "2f7481ae127275146e0e03507abf39856801809263d890bf01a81b966f1c19d5"
-dependencies = []
-
-[[package]]
-name = "official_oracle_v2.aleo"
-network = "testnet"
+name = "official_oracle.aleo"
+network = "mainnet"
 location = "network"
-checksum = "ed144cd6f52a37f3f5817adf6364890e786e9b0179323cf3f0cc26182b1944ba"
+checksum = "4c71d88cff575b34b46a43e860c7033a122984e716d4fb01063bfc21055cdf0a"
 dependencies = []

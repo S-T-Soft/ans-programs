@@ -1,4 +1,4 @@
-# ans_registrar_usd_v2.aleo
+# ans_registrar_usd.aleo
 
 ## Build Guide
 

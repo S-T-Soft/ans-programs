@@ -1,28 +1,28 @@
 {
-  "program": "ans_registrar_usd_v2.aleo",
+  "program": "ans_registrar_usd.aleo",
   "version": "0.0.1",
   "description": "",
   "license": "MIT",
   "dependencies": [
     {
-      "name": "aleo_name_service_registry_v4.aleo",
+      "name": "aleo_name_service_registry.aleo",
       "location": "local",
       "path": "../registry"
     },
     {
-      "name": "ans_coupon_card_v3.aleo",
+      "name": "ans_coupon_card.aleo",
       "location": "local",
       "path": "../ans_coupon_card"
     },
     {
-      "name": "pondo_core_protocolv1.aleo",
+      "name": "pondo_protocol.aleo",
       "location": "network",
-      "network": "testnet"
+      "network": "mainnet"
     },
     {
-      "name": "official_oracle_v2.aleo",
+      "name": "official_oracle.aleo",
       "location": "network",
-      "network": "testnet"
+      "network": "mainnet"
     }
   ]
 }
