@@ -7,15 +7,15 @@
     {
       "name": "credits.aleo",
       "location": "network",
-      "network": "testnet"
+      "network": "mainnet"
     },
     {
-      "name": "multi_token_support_programv1.aleo",
+      "name": "token_registry.aleo",
       "location": "network",
-      "network": "testnet"
+      "network": "mainnet"
     },
     {
-      "name": "aleo_name_service_registry_v4.aleo",
+      "name": "aleo_name_service_registry.aleo",
       "location": "local",
       "path": "../registry"
     }

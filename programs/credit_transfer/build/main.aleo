@@ -1,7 +1,7 @@
 import credits.aleo;
-import multi_token_support_programv1.aleo;
-import ans_utils_v2.aleo;
-import aleo_name_service_registry_v4.aleo;
+import token_registry.aleo;
+import ans_utils.aleo;
+import aleo_name_service_registry.aleo;
 program ans_credit_transfer.aleo;
 
 struct TokenMetadata:
@@ -19,13 +19,13 @@ struct TokenOwner:
     account as address;
     token_id as field;
 
+struct data:
+    metadata as [field; 4u32];
+
 struct NameStruct:
     name as [u128; 4u32];
     parent as field;
     resolver as field;
-
-struct data:
-    metadata as [field; 4u32];
 
 struct NameTokenPair:
     name_hash as field;
@@ -79,12 +79,12 @@ finalize transfer_credits_public:
     set r4 into domain_credits[r1];
 
 function claim_credits_private:
-    input r0 as aleo_name_service_registry_v4.aleo/NFT.record;
+    input r0 as aleo_name_service_registry.aleo/NFT.record;
     input r1 as [u128; 2u32].private;
     input r2 as u64.private;
     call credits.aleo/transfer_public_to_private self.caller r2 into r3 r4;
     hash.psd2 r1 into r5 as scalar;
-    call aleo_name_service_registry_v4.aleo/check r0 into r6;
+    call aleo_name_service_registry.aleo/check r0 into r6;
     hash.bhp256 r0.data into r7 as field;
     commit.bhp256 r7 0scalar into r8 as field;
     commit.bhp256 r8 r5 into r9 as field;
@@ -117,7 +117,7 @@ finalize claim_credits_public:
     input r3 as field.public;
     input r4 as u64.public;
     await r0;
-    get aleo_name_service_registry_v4.aleo/nft_owners[r1] into r5;
+    get aleo_name_service_registry.aleo/nft_owners[r1] into r5;
     assert.eq r2 r5;
     get domain_credits[r3] into r6;
     sub r6 r4 into r7;
@@ -128,8 +128,8 @@ function transfer_token:
     input r1 as field.private;
     input r2 as [u128; 2u32].private;
     input r3 as u128.private;
-    input r4 as multi_token_support_programv1.aleo/Token.record;
-    call multi_token_support_programv1.aleo/transfer_private_to_public ans_credit_transfer.aleo r3 r4 into r5 r6;
+    input r4 as token_registry.aleo/Token.record;
+    call token_registry.aleo/transfer_private_to_public ans_credit_transfer.aleo r3 r4 into r5 r6;
     hash.psd2 r2 into r7 as scalar;
     cast r1 r0 into r8 as NameTokenPair;
     commit.bhp256 r8 r7 into r9 as field;
@@ -137,7 +137,7 @@ function transfer_token:
     output r10 as ans_credit_transfer.aleo/transfer_token.future;
 
 finalize transfer_token:
-    input r0 as multi_token_support_programv1.aleo/transfer_private_to_public.future;
+    input r0 as token_registry.aleo/transfer_private_to_public.future;
     input r1 as field.public;
     input r2 as u128.public;
     await r0;
@@ -150,7 +150,7 @@ function transfer_token_public:
     input r1 as field.private;
     input r2 as [u128; 2u32].private;
     input r3 as u128.private;
-    call multi_token_support_programv1.aleo/transfer_public_as_signer r0 ans_credit_transfer.aleo r3 into r4;
+    call token_registry.aleo/transfer_public_as_signer r0 ans_credit_transfer.aleo r3 into r4;
     hash.psd2 r2 into r5 as scalar;
     cast r1 r0 into r6 as NameTokenPair;
     commit.bhp256 r6 r5 into r7 as field;
@@ -158,7 +158,7 @@ function transfer_token_public:
     output r8 as ans_credit_transfer.aleo/transfer_token_public.future;
 
 finalize transfer_token_public:
-    input r0 as multi_token_support_programv1.aleo/transfer_public_as_signer.future;
+    input r0 as token_registry.aleo/transfer_public_as_signer.future;
     input r1 as field.public;
     input r2 as u128.public;
     await r0;
@@ -168,13 +168,13 @@ finalize transfer_token_public:
 
 function claim_token_private:
     input r0 as field.private;
-    input r1 as aleo_name_service_registry_v4.aleo/NFT.record;
+    input r1 as aleo_name_service_registry.aleo/NFT.record;
     input r2 as [u128; 2u32].private;
     input r3 as u128.private;
     input r4 as boolean.private;
-    call multi_token_support_programv1.aleo/transfer_public_to_private r0 self.caller r3 r4 into r5 r6;
+    call token_registry.aleo/transfer_public_to_private r0 self.caller r3 r4 into r5 r6;
     hash.psd2 r2 into r7 as scalar;
-    call aleo_name_service_registry_v4.aleo/check r1 into r8;
+    call aleo_name_service_registry.aleo/check r1 into r8;
     hash.bhp256 r1.data into r9 as field;
     commit.bhp256 r9 0scalar into r10 as field;
     cast r10 r0 into r11 as NameTokenPair;
@@ -183,7 +183,7 @@ function claim_token_private:
     output r13 as ans_credit_transfer.aleo/claim_token_private.future;
 
 finalize claim_token_private:
-    input r0 as multi_token_support_programv1.aleo/transfer_public_to_private.future;
+    input r0 as token_registry.aleo/transfer_public_to_private.future;
     input r1 as field.public;
     input r2 as u128.public;
     await r0;
@@ -197,7 +197,7 @@ function claim_token_public:
     input r2 as [u128; 2u32].private;
     input r3 as u128.private;
     input r4 as boolean.private;
-    call multi_token_support_programv1.aleo/transfer_public_to_private r0 self.caller r3 r4 into r5 r6;
+    call token_registry.aleo/transfer_public_to_private r0 self.caller r3 r4 into r5 r6;
     hash.psd2 r2 into r7 as scalar;
     cast r1 r0 into r8 as NameTokenPair;
     commit.bhp256 r8 r7 into r9 as field;
@@ -205,13 +205,13 @@ function claim_token_public:
     output r10 as ans_credit_transfer.aleo/claim_token_public.future;
 
 finalize claim_token_public:
-    input r0 as multi_token_support_programv1.aleo/transfer_public_to_private.future;
+    input r0 as token_registry.aleo/transfer_public_to_private.future;
     input r1 as field.public;
     input r2 as address.public;
     input r3 as field.public;
     input r4 as u128.public;
     await r0;
-    get aleo_name_service_registry_v4.aleo/nft_owners[r1] into r5;
+    get aleo_name_service_registry.aleo/nft_owners[r1] into r5;
     assert.eq r2 r5;
     get domain_tokens[r3] into r6;
     sub r6 r4 into r7;
