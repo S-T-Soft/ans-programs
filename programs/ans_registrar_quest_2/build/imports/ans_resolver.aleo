@@ -2,13 +2,13 @@ import ans_utils.aleo;
 import aleo_name_service_registry.aleo;
 program ans_resolver.aleo;
 
+struct data:
+    metadata as [field; 4u32];
+
 struct NameStruct:
     name as [u128; 4u32];
     parent as field;
     resolver as field;
-
-struct data:
-    metadata as [field; 4u32];
 
 struct ResolverIndex:
     name as field;

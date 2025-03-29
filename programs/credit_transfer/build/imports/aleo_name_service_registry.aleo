@@ -1,19 +1,6 @@
 import ans_utils.aleo;
 program aleo_name_service_registry.aleo;
 
-struct Name:
-    name as [u128; 4u32];
-    parent as field;
-
-struct NameStruct:
-    name as [u128; 4u32];
-    parent as field;
-    resolver as field;
-
-struct ANSAllowance:
-    account as address;
-    spender as address;
-
 struct data:
     metadata as [field; 4u32];
 
@@ -28,6 +15,19 @@ record NFTView:
     edition as scalar.private;
     is_view as boolean.private;
 
+struct Name:
+    name as [u128; 4u32];
+    parent as field;
+
+struct NameStruct:
+    name as [u128; 4u32];
+    parent as field;
+    resolver as field;
+
+struct ANSAllowance:
+    account as address;
+    spender as address;
+
 mapping nft_owners:
     key as field.public;
     value as address.public;
@@ -37,9 +37,8 @@ mapping names:
     value as NameStruct.public;
 
 mapping tlds:
-	key as field.public;
-	value as [u128; 4u32].public;
-
+    key as field.public;
+    value as [u128; 4u32].public;
 
 mapping primary_names:
     key as address.public;
@@ -82,8 +81,7 @@ finalize initialize_collection:
     set r0[1u32] into general_settings[4u8];
     set r0[2u32] into general_settings[5u8];
     set r0[3u32] into general_settings[6u8];
-    cast aleo1ans0q6xzgs6npc0sd248lg7agrjtpd8m5etn6xp2f70xtfd7nvys536e09 into r3 as field;
-    set r3 into general_settings[7u8];
+    set 4345992723188803454297093841178137779092208895729335912081077873208485535980field into general_settings[7u8];
     set 1u32 into toggle_settings[0u8];
 
 function set_admin:

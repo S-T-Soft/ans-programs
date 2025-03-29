@@ -71,7 +71,7 @@ program ans_coupon_card.aleo {
         };
         return (new_card, remain_card);
     }
-å
+
     async transition transfer_private_to_public(
         card: CouponCard,
         public receiver: address,

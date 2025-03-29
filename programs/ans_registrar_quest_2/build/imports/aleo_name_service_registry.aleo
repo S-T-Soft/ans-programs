@@ -1,19 +1,5 @@
 import ans_utils.aleo;
-
 program aleo_name_service_registry.aleo;
-
-struct Name:
-    name as [u128; 4u32];
-    parent as field;
-
-struct NameStruct:
-    name as [u128; 4u32];
-    parent as field;
-    resolver as field;
-
-struct ANSAllowance:
-    account as address;
-    spender as address;
 
 struct data:
     metadata as [field; 4u32];
@@ -28,6 +14,19 @@ record NFTView:
     data as data.private;
     edition as scalar.private;
     is_view as boolean.private;
+
+struct Name:
+    name as [u128; 4u32];
+    parent as field;
+
+struct NameStruct:
+    name as [u128; 4u32];
+    parent as field;
+    resolver as field;
+
+struct ANSAllowance:
+    account as address;
+    spender as address;
 
 mapping nft_owners:
     key as field.public;
@@ -74,7 +73,7 @@ finalize initialize_collection:
     input r0 as [field; 4u32].public;
     get.or_use toggle_settings[0u8] 0u32 into r1;
     and r1 1u32 into r2;
-    assert.eq r2 0u32 ;
+    assert.eq r2 0u32;
     set 1000000000field into general_settings[0u8];
     set 1000000000field into general_settings[1u8];
     set 4279891field into general_settings[2u8];
@@ -82,8 +81,7 @@ finalize initialize_collection:
     set r0[1u32] into general_settings[4u8];
     set r0[2u32] into general_settings[5u8];
     set r0[3u32] into general_settings[6u8];
-    cast aleo1ans0q6xzgs6npc0sd248lg7agrjtpd8m5etn6xp2f70xtfd7nvys536e09 into r3 as field;
-    set r3 into general_settings[7u8];
+    set 4345992723188803454297093841178137779092208895729335912081077873208485535980field into general_settings[7u8];
     set 1u32 into toggle_settings[0u8];
 
 function set_admin:
@@ -97,15 +95,15 @@ finalize set_admin:
     input r0 as field.public;
     input r1 as field.public;
     get general_settings[7u8] into r2;
-    assert.eq r0 r2 ;
+    assert.eq r0 r2;
     set r1 into general_settings[7u8];
 
 function update_settings:
     input r0 as u8.private;
     input r1 as field.private;
-    assert.neq r0 0u8 ;
-    assert.neq r0 1u8 ;
-    assert.neq r0 7u8 ;
+    assert.neq r0 0u8;
+    assert.neq r0 1u8;
+    assert.neq r0 7u8;
     cast self.caller into r2 as field;
     async update_settings r2 r0 r1 into r3;
     output r3 as aleo_name_service_registry.aleo/update_settings.future;
@@ -115,10 +113,10 @@ finalize update_settings:
     input r1 as u8.public;
     input r2 as field.public;
     get general_settings[7u8] into r3;
-    assert.eq r0 r3 ;
+    assert.eq r0 r3;
     get toggle_settings[0u8] into r4;
     and r4 9u32 into r5;
-    assert.eq r5 1u32 ;
+    assert.eq r5 1u32;
     set r2 into general_settings[r1];
 
 function update_toggle_settings:
@@ -131,12 +129,12 @@ finalize update_toggle_settings:
     input r0 as field.public;
     input r1 as u32.public;
     get general_settings[7u8] into r2;
-    assert.eq r0 r2 ;
+    assert.eq r0 r2;
     get toggle_settings[0u8] into r3;
     and r3 9u32 into r4;
-    assert.eq r4 1u32 ;
+    assert.eq r4 1u32;
     and r1 1u32 into r5;
-    assert.eq r5 1u32 ;
+    assert.eq r5 1u32;
     set r1 into toggle_settings[0u8];
 
 closure calc_name_hash:
@@ -144,7 +142,7 @@ closure calc_name_hash:
     input r1 as field;
     cast r0 r1 into r2 as Name;
     hash.psd2 r2 into r3 as field;
-    cast r3 0field 0field 0field into r4 as [field; 4u32];
+    cast  r3 0field 0field 0field into r4 as [field; 4u32];
     cast r4 into r5 as data;
     hash.bhp256 r5 into r6 as field;
     commit.bhp256 r6 0scalar into r7 as field;
@@ -166,9 +164,9 @@ finalize register_tld:
     input r2 as field.public;
     input r3 as NameStruct.public;
     get general_settings[7u8] into r4;
-    assert.eq r0 r4 ;
+    assert.eq r0 r4;
     contains names[r2] into r5;
-    assert.eq r5 false ;
+    assert.eq r5 false;
     set r3 into names[r2];
     set r1 into nft_owners[r2];
     set r3.name into tlds[r2];
@@ -179,9 +177,9 @@ function register:
     input r2 as address.private;
     input r3 as field.private;
     call ans_utils.aleo/validate_name r0 into r4;
-    assert.eq r4 true ;
+    assert.eq r4 true;
     call calc_name_hash r0 r1 into r5 r6;
-    cast r5 0field 0field 0field into r7 as [field; 4u32];
+    cast  r5 0field 0field 0field into r7 as [field; 4u32];
     cast r7 into r8 as data;
     cast r2 r8 0scalar into r9 as NFT.record;
     async register r6 r0 r1 r3 self.caller into r10;
@@ -195,12 +193,12 @@ finalize register:
     input r3 as field.public;
     input r4 as address.public;
     get nft_owners[r2] into r5;
-    assert.eq r4 r5 ;
+    assert.eq r4 r5;
     contains names[r0] into r6;
-    assert.eq r6 false ;
+    assert.eq r6 false;
     get toggle_settings[0u8] into r7;
     and r7 3u32 into r8;
-    assert.eq r8 3u32 ;
+    assert.eq r8 3u32;
     cast r1 r2 r3 into r9 as NameStruct;
     set r9 into names[r0];
 
@@ -210,11 +208,11 @@ function register_private:
     input r2 as address.private;
     input r3 as field.private;
     call ans_utils.aleo/validate_name r0 into r4;
-    assert.eq r4 true ;
+    assert.eq r4 true;
     hash.bhp256 r1.data into r5 as field;
     commit.bhp256 r5 0scalar into r6 as field;
     call calc_name_hash r0 r6 into r7 r8;
-    cast r7 0field 0field 0field into r9 as [field; 4u32];
+    cast  r7 0field 0field 0field into r9 as [field; 4u32];
     cast r9 into r10 as data;
     cast r2 r10 0scalar into r11 as NFT.record;
     cast r1.owner r1.data r1.edition into r12 as NFT.record;
@@ -229,10 +227,10 @@ finalize register_private:
     input r2 as field.public;
     input r3 as field.public;
     contains names[r0] into r4;
-    assert.eq r4 false ;
+    assert.eq r4 false;
     get toggle_settings[0u8] into r5;
     and r5 3u32 into r6;
-    assert.eq r6 3u32 ;
+    assert.eq r6 3u32;
     cast r1 r2 r3 into r7 as NameStruct;
     set r7 into names[r0];
 
@@ -242,9 +240,9 @@ function register_public:
     input r2 as address.private;
     input r3 as field.private;
     call ans_utils.aleo/validate_name r0 into r4;
-    assert.eq r4 true ;
+    assert.eq r4 true;
     call calc_name_hash r0 r1 into r5 r6;
-    cast r5 0field 0field 0field into r7 as [field; 4u32];
+    cast  r5 0field 0field 0field into r7 as [field; 4u32];
     cast r7 into r8 as data;
     cast r2 r8 0scalar into r9 as NFT.record;
     async register_public r6 r0 r1 r3 self.signer into r10;
@@ -258,12 +256,12 @@ finalize register_public:
     input r3 as field.public;
     input r4 as address.public;
     get nft_owners[r2] into r5;
-    assert.eq r4 r5 ;
+    assert.eq r4 r5;
     contains names[r0] into r6;
-    assert.eq r6 false ;
+    assert.eq r6 false;
     get toggle_settings[0u8] into r7;
     and r7 3u32 into r8;
-    assert.eq r8 3u32 ;
+    assert.eq r8 3u32;
     cast r1 r2 r3 into r9 as NameStruct;
     set r9 into names[r0];
 
@@ -299,7 +297,7 @@ finalize transfer_public:
     input r1 as field.public;
     input r2 as address.public;
     get nft_owners[r1] into r3;
-    assert.eq r2 r3 ;
+    assert.eq r2 r3;
     set r0 into nft_owners[r1];
     remove allowances[r1];
     get.or_use name_versions[r1] 1u64 into r4;
@@ -345,7 +343,7 @@ finalize transfer_public_to_private:
     input r0 as address.public;
     input r1 as field.public;
     get nft_owners[r1] into r2;
-    assert.eq r0 r2 ;
+    assert.eq r0 r2;
     remove nft_owners[r1];
     remove allowances[r1];
     get.or_use name_versions[r1] 1u64 into r3;
@@ -368,7 +366,7 @@ finalize set_primary_name:
     input r0 as field.public;
     input r1 as address.public;
     get nft_owners[r0] into r2;
-    assert.eq r1 r2 ;
+    assert.eq r1 r2;
     set r0 into primary_names[r1];
 
 function unset_primary_name:
@@ -390,7 +388,7 @@ finalize set_resolver:
     input r1 as address.public;
     input r2 as field.public;
     get nft_owners[r0] into r3;
-    assert.eq r1 r3 ;
+    assert.eq r1 r3;
     get names[r0] into r4;
     cast r4.name r4.parent r2 into r5 as NameStruct;
     set r5 into names[r0];
@@ -401,7 +399,7 @@ function authorize:
     output r1 as aleo_name_service_registry.aleo/authorize.future;
 
 finalize authorize:
-    assert.eq 0u8 1u8 ;
+    assert.eq 0u8 1u8;
 
 function check:
     input r0 as NFT.record;
@@ -438,7 +436,7 @@ finalize approve_public:
     input r1 as field.public;
     input r2 as field.public;
     get nft_owners[r2] into r3;
-    assert.eq r3 r0 ;
+    assert.eq r3 r0;
     set r1 into allowances[r2];
 
 function set_for_all_approval:
@@ -477,9 +475,9 @@ finalize transfer_from_public:
     is.eq r4 r0 into r5;
     get.or_use for_all_allowances[r0] false into r6;
     or r5 r6 into r7;
-    assert.eq r7 true ;
+    assert.eq r7 true;
     get nft_owners[r3] into r8;
-    assert.eq r1 r8 ;
+    assert.eq r1 r8;
     remove allowances[r3];
     set r2 into nft_owners[r3];
     get.or_use name_versions[r3] 1u64 into r9;

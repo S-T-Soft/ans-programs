@@ -1,0 +1,18 @@
+{
+  "program": "ans_registrar_quest_1.aleo",
+  "version": "0.0.1",
+  "description": "",
+  "license": "MIT",
+  "dependencies": [
+    {
+      "name": "messenger.aleo",
+      "location": "local",
+      "path": "../messenger"
+    },
+    {
+      "name": "ans_registrar_usd_v2.aleo",
+      "location": "local",
+      "path": "../ans_registrar_usd"
+    }
+  ]
+}
