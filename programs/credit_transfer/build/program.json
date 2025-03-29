@@ -1,21 +1,21 @@
 {
-  "program": "ans_credit_transfer_v1.aleo",
-  "version": "0.0.2",
+  "program": "ans_credit_transfer.aleo",
+  "version": "1.0.0",
   "description": "",
   "license": "MIT",
   "dependencies": [
     {
       "name": "credits.aleo",
       "location": "network",
-      "network": "testnet"
+      "network": "mainnet"
     },
     {
-      "name": "multi_token_support_programv1.aleo",
+      "name": "token_registry.aleo",
       "location": "network",
-      "network": "testnet"
+      "network": "mainnet"
     },
     {
-      "name": "aleo_name_service_registry_v4.aleo",
+      "name": "aleo_name_service_registry.aleo",
       "location": "local",
       "path": "../registry"
     }

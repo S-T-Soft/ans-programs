@@ -3,7 +3,7 @@ import credits.aleo;
 import aleo_name_service_registry.aleo;
 import token_registry.aleo;
 
-program ans_credit_transfer_v1.aleo {
+program ans_credit_transfer.aleo {
     struct NameTokenPair {
         name_hash: field,
         token_id: field
@@ -71,13 +71,13 @@ program ans_credit_transfer_v1.aleo {
     // claim the credits with private ans domain NFT and secret
     async transition claim_credits_private (
         receiver: address,
-        nft: aleo_name_service_registry_v4.aleo/NFT,
+        nft: aleo_name_service_registry.aleo/NFT,
         secret: [u128; 2], // the secret, 0-32 length ascii bits
         amount: u64
     ) -> (credits.aleo/credits, Future) {
         let (r, f): (credits.aleo/credits, Future) = credits.aleo/transfer_public_to_private(receiver, amount);
         let salt: scalar = Poseidon2::hash_to_scalar(secret);
-        let new_nft: aleo_name_service_registry_v4.aleo/NFT = aleo_name_service_registry_v4.aleo/check(nft);
+        let new_nft: aleo_name_service_registry.aleo/NFT = aleo_name_service_registry.aleo/check(nft);
         let name_secret_hash: field = BHP256::commit_to_field(calc_name_hash_for_data(nft.data), salt);
         return (r, finalize_claim_credits_private(f, name_secret_hash, amount));
     }
@@ -113,7 +113,7 @@ program ans_credit_transfer_v1.aleo {
         amount: u64
     ) {
         f.await();
-        let ans_owner: address = aleo_name_service_registry_v4.aleo/nft_owners.get(name_hash);
+        let ans_owner: address = aleo_name_service_registry.aleo/nft_owners.get(name_hash);
         assert_eq(owner, ans_owner);
         let current_amount: u64 = domain_credits.get(name_secret_hash);
         domain_credits.set(name_secret_hash, current_amount - amount);
@@ -140,7 +140,7 @@ program ans_credit_transfer_v1.aleo {
         amount: u64
     ) {
         f.await();
-        let ans_owner: address = aleo_name_service_registry_v4.aleo/nft_owners.get(name_hash);
+        let ans_owner: address = aleo_name_service_registry.aleo/nft_owners.get(name_hash);
         assert_eq(owner, ans_owner);
         let current_amount: u64 = domain_credits.get(name_secret_hash);
         domain_credits.set(name_secret_hash, current_amount - amount);
@@ -152,9 +152,9 @@ program ans_credit_transfer_v1.aleo {
         receiver: field, // name_hash of the ans domain
         secret: [u128; 2], // the secret, 0-32 length ascii bits
         amount: u128,
-        pay_record: multi_token_support_programv1.aleo/Token
-    ) -> (multi_token_support_programv1.aleo/Token, Future) {
-        let (r, f): (multi_token_support_programv1.aleo/Token, Future) = multi_token_support_programv1.aleo/transfer_private_to_public(self.address, amount, pay_record);
+        pay_record: token_registry.aleo/Token
+    ) -> (token_registry.aleo/Token, Future) {
+        let (r, f): (token_registry.aleo/Token, Future) = token_registry.aleo/transfer_private_to_public(self.address, amount, pay_record);
         let salt: scalar = Poseidon2::hash_to_scalar(secret);
         let name_token_pair: NameTokenPair = NameTokenPair {
             name_hash: receiver,
@@ -181,7 +181,7 @@ program ans_credit_transfer_v1.aleo {
         secret: [u128; 2], // the secret, 0-32 length ascii bits
         amount: u128
     ) -> Future {
-        let f: Future = multi_token_support_programv1.aleo/transfer_public_as_signer(token_id, self.address, amount);
+        let f: Future = token_registry.aleo/transfer_public_as_signer(token_id, self.address, amount);
         let salt: scalar = Poseidon2::hash_to_scalar(secret);
         let name_token_pair: NameTokenPair = NameTokenPair {
             name_hash: receiver,
@@ -206,11 +206,11 @@ program ans_credit_transfer_v1.aleo {
         receiver: address,
         token_id: field, // the token id
         nft: aleo_name_service_registry.aleo/NFT,
-        secret: [u128; 2], // the secret, 0-64 length ascii bits
+        secret: [u128; 2], // the secret, 0-32 length ascii bits
         amount: u128,
         external_authorization_required: bool
-    ) -> (multi_token_support_programv1.aleo/Token, Future) {
-        let (r, f): (multi_token_support_programv1.aleo/Token, Future) = multi_token_support_programv1.aleo/transfer_public_to_private(token_id, receiver, amount, external_authorization_required);
+    ) -> (token_registry.aleo/Token, Future) {
+        let (r, f): (token_registry.aleo/Token, Future) = token_registry.aleo/transfer_public_to_private(token_id, receiver, amount, external_authorization_required);
         let salt: scalar = Poseidon2::hash_to_scalar(secret);
         let new_nft: aleo_name_service_registry.aleo/NFT = aleo_name_service_registry.aleo/check(nft);
         let name_token_pair: NameTokenPair = NameTokenPair {
@@ -239,7 +239,7 @@ program ans_credit_transfer_v1.aleo {
         secret: [u128; 2], // the secret, 0-32 length ascii bits
         amount: u128
     ) -> Future {
-        let f: Future = multi_token_support_programv1.aleo/transfer_public(token_id, receiver, amount);
+        let f: Future = token_registry.aleo/transfer_public(token_id, receiver, amount);
         let salt: scalar = Poseidon2::hash_to_scalar(secret);
         let name_token_pair: NameTokenPair = NameTokenPair {
             name_hash: name_hash,
@@ -271,7 +271,7 @@ program ans_credit_transfer_v1.aleo {
         secret: [u128; 2], // the secret, 0-32 length ascii bits
         amount: u128
     ) -> Future {
-        let f: Future = multi_token_support_programv1.aleo/transfer_public(token_id, receiver, amount);
+        let f: Future = token_registry.aleo/transfer_public(token_id, receiver, amount);
         let salt: scalar = Poseidon2::hash_to_scalar(secret);
         let name_token_pair: NameTokenPair = NameTokenPair {
             name_hash: name_hash,
@@ -289,7 +289,7 @@ program ans_credit_transfer_v1.aleo {
         amount: u128
     ) {
         f.await();
-        let ans_owner: address = aleo_name_service_registry_v4.aleo/nft_owners.get(name_hash);
+        let ans_owner: address = aleo_name_service_registry.aleo/nft_owners.get(name_hash);
         assert_eq(owner, ans_owner);
         let current_amount: u128 = domain_tokens.get(name_secret_hash);
         domain_tokens.set(name_secret_hash, current_amount - amount);

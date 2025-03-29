@@ -1,4 +1,4 @@
-# ans_credit_transfer_v1.aleo
+# ans_credit_transfer.aleo
 
 ## Build Guide
 
