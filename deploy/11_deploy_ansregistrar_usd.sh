@@ -22,7 +22,7 @@ fi
 
 source ${env}.env
 
-cd ../programs/ans_registrar_usd || exit
+cd ../programs/ans_registrar_usd2 || exit
 
 echo "NETWORK=${NETWORK}
 PRIVATE_KEY=${PRIVATE_KEY}

@@ -5,9 +5,8 @@ env="dev"
 # tld ans
 name=""
 parent="559532657689873513833888656958509165446284001025178663602770230581478239512field"
-is_sgx="false"
-timestamp="1738497668u128"
-price="424460u64"
+timestamp="1745215515u64"
+price="272000u64"
 
 for arg in "$@"; do
   case $arg in
@@ -40,13 +39,13 @@ name_arr=$(python3 -c "s = '$name'; b = s.encode('utf-8') + b'\0' * (64 - len(s)
 
 source ${env}.env
 
-program=`jq -r '.program' ../programs/ans_registrar_usd/program.json`
+program=`jq -r '.program' ../programs/ans_registrar_usd2/program.json`
 
 echo -e "Register \033[32m${name}.ans\033[0m from \033[32m${program}\033[0m in \033[32m${env}\033[0m"
 
 output=$(snarkos developer execute --private-key "${PRIVATE_KEY}" --query "${ENDPOINT}" --network 1 \
   -b "${ENDPOINT}/testnet/transaction/broadcast" \
-  "${program}" register_fld_public "${name_arr}" "${parent}" "${ADDRESS}" "${is_sgx}" "${timestamp}" "${price}")
+  "${program}" register_fld_public "${name_arr}" "${parent}" "${ADDRESS}" "${timestamp}" "${price}")
 
 echo "${output}"
 tx=$(echo ${output} | awk 'match($0, /[^0-9a-zA-Z](at[0-9a-zA-Z]+)[^0-9a-zA-Z]/) {print substr($0, RSTART + 1, RLENGTH - 2); exit}')
