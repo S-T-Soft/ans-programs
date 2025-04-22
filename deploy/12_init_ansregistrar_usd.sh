@@ -24,7 +24,7 @@ root=$(pwd)
 env_file="${root}/${env}.env"
 source $env_file
 
-cd ../programs/ans_registrar_usd || exit
+cd ../programs/ans_registrar_usd2 || exit
 
 echo "NETWORK=${NETWORK}
 PRIVATE_KEY=${PRIVATE_KEY}
