@@ -1,4 +1,4 @@
-program ans_coupon_card_v3.aleo;
+program ans_coupon_card.aleo;
 
 record CouponCard:
     owner as address.private;
@@ -23,17 +23,17 @@ mapping cards:
 
 function initialize:
     async initialize into r0;
-    output r0 as ans_coupon_card_v3.aleo/initialize.future;
+    output r0 as ans_coupon_card.aleo/initialize.future;
 
 finalize initialize:
-    get.or_use admins[0u8] ans_coupon_card_v3.aleo into r0;
-    assert.eq r0 ans_coupon_card_v3.aleo;
-    set aleo1sr8d93usu395zc29qcl35ul2e7hl2538hl8pehe4ms88q4g70gxq3ffw0v into admins[0u8];
+    get.or_use admins[0u8] ans_coupon_card.aleo into r0;
+    assert.eq r0 ans_coupon_card.aleo;
+    set aleo1ans8gd200s2yyrx72y7txgee5snq6v6la8wa3r8r0ups4l2hjv9qku8k6k into admins[0u8];
 
 function set_admin:
     input r0 as address.private;
     async set_admin self.caller r0 into r1;
-    output r1 as ans_coupon_card_v3.aleo/set_admin.future;
+    output r1 as ans_coupon_card.aleo/set_admin.future;
 
 finalize set_admin:
     input r0 as address.public;
@@ -62,7 +62,7 @@ function transfer_private_to_public:
     hash.bhp256 r3 into r6 as field;
     async transfer_private_to_public r6 r2 into r7;
     output r5 as CouponCard.record;
-    output r7 as ans_coupon_card_v3.aleo/transfer_private_to_public.future;
+    output r7 as ans_coupon_card.aleo/transfer_private_to_public.future;
 
 finalize transfer_private_to_public:
     input r0 as field.public;
@@ -82,7 +82,7 @@ function transfer_public_to_private:
     cast r0 r1 r2 r3 r4 into r7 as CouponCard.record;
     async transfer_public_to_private r6 r4 into r8;
     output r7 as CouponCard.record;
-    output r8 as ans_coupon_card_v3.aleo/transfer_public_to_private.future;
+    output r8 as ans_coupon_card.aleo/transfer_public_to_private.future;
 
 finalize transfer_public_to_private:
     input r0 as field.public;
@@ -104,7 +104,7 @@ function transfer_public:
     cast r0 r1 r2 r3 into r7 as CardOwner;
     hash.bhp256 r7 into r8 as field;
     async transfer_public r6 r8 r4 into r9;
-    output r9 as ans_coupon_card_v3.aleo/transfer_public.future;
+    output r9 as ans_coupon_card.aleo/transfer_public.future;
 
 finalize transfer_public:
     input r0 as field.public;
@@ -130,7 +130,7 @@ function issue_coupon_card:
     cast r0 r1 r2 r3 r4 into r6 as CouponCard.record;
     async issue_coupon_card self.caller into r7;
     output r6 as CouponCard.record;
-    output r7 as ans_coupon_card_v3.aleo/issue_coupon_card.future;
+    output r7 as ans_coupon_card.aleo/issue_coupon_card.future;
 
 finalize issue_coupon_card:
     input r0 as address.public;
@@ -148,7 +148,7 @@ function issue_coupon_card_public:
     cast r0 r1 r2 r3 into r6 as CardOwner;
     hash.bhp256 r6 into r7 as field;
     async issue_coupon_card_public self.caller r7 r4 into r8;
-    output r8 as ans_coupon_card_v3.aleo/issue_coupon_card_public.future;
+    output r8 as ans_coupon_card.aleo/issue_coupon_card_public.future;
 
 finalize issue_coupon_card_public:
     input r0 as address.public;

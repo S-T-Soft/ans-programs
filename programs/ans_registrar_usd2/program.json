@@ -5,19 +5,22 @@
   "license": "MIT",
   "dependencies": [
     {
-      "name": "aleo_name_service_registry_v4.aleo",
+      "name": "aleo_name_service_registry.aleo",
       "location": "local",
+      "network": null,
       "path": "../registry"
     },
     {
-      "name": "ans_coupon_card_v3.aleo",
+      "name": "ans_coupon_card.aleo",
       "location": "local",
+      "network": null,
       "path": "../ans_coupon_card"
     },
     {
-      "name": "pondo_core_protocolv1.aleo",
+      "name": "credits.aleo",
       "location": "network",
-      "network": "testnet"
+      "network": "mainnet",
+      "path": null
     }
   ]
 }

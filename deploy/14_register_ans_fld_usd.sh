@@ -5,9 +5,8 @@ env="dev"
 # tld ans
 name=""
 parent="559532657689873513833888656958509165446284001025178663602770230581478239512field"
-is_sgx="false"
-timestamp="1738497668u128"
-price="424460u64"
+timestamp="1747072805u64"
+price="264000u64"
 
 for arg in "$@"; do
   case $arg in
@@ -40,16 +39,16 @@ name_arr=$(python3 -c "s = '$name'; b = s.encode('utf-8') + b'\0' * (64 - len(s)
 
 source ${env}.env
 
-program=`jq -r '.program' ../programs/ans_registrar_usd/program.json`
+program=`jq -r '.program' ../programs/ans_registrar_usd2/program.json`
 
 echo -e "Register \033[32m${name}.ans\033[0m from \033[32m${program}\033[0m in \033[32m${env}\033[0m"
 
 if [[ -z "${FEE_RECORD}" ]]; then
   output=$(leo execute -b --private-key "${PRIVATE_KEY}" --endpoint "${ENDPOINT}" \
-           -p "${program%.aleo}" --network "${NETWORK}" register_fld "${name_arr}" "${parent}" "${ADDRESS}" "${RECORD}" "${is_sgx}" "${timestamp}" "${price}")
+           -p "${program%.aleo}" --network "${NETWORK}" register_fld "${name_arr}" "${parent}" "${ADDRESS}" "${RECORD}" "${timestamp}" "${price}")
 else
   output=$(leo execute -b --private-key "${PRIVATE_KEY}" --endpoint "${ENDPOINT}" --record "${FEE_RECORD}" \
-           -p "${program%.aleo}" --network "${NETWORK}" register_fld "${name_arr}" "${parent}" "${ADDRESS}" "${RECORD}" "${is_sgx}" "${timestamp}" "${price}")
+           -p "${program%.aleo}" --network "${NETWORK}" register_fld "${name_arr}" "${parent}" "${ADDRESS}" "${RECORD}" "${timestamp}" "${price}")
 fi
 
 echo "${output}"

@@ -20,8 +20,7 @@ if [[ ! -f ${env}.env ]]; then
   exit 1
 fi
 
-root=$(pwd)
-env_file="${root}/${env}.env"
+env_file="${env}.env"
 source $env_file
 
 cd ../programs/ans_registrar_usd2 || exit
